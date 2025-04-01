@@ -27,7 +27,7 @@ openWindow = (url: string) => {
 connect = async (platform: string) => {
   if (!isAuthenticated.value) return shakeButton(platform);
 
-  const url = await fetchBackend(`auth/${platform.toLowerCase()}/authorize`, {
+  const url = await fetchBackend<string>(`auth/${platform.toLowerCase()}/authorize`, {
     auth: true
   }).then(res => res.data?.[0])
 
@@ -80,7 +80,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'KICK' }" 
           @click="connect('KICK')"
         >
-          <img src="https://dev.kick.com/wp-content/uploads/2025/02/download-1.png" class="icon"/> Kick
+          <img src="https://kick.com/favicon.ico" class="icon"/> Kick
         </button>
 
         <button 
@@ -97,6 +97,14 @@ onMounted(() => {
           @click="connect('SPOTIFY')"
         >
           <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2023/05/Spotify_Primary_Logo_RGB_Black.png" class="icon"/> Spotify
+        </button>
+
+        <button 
+          style="background-color:#1b2838" 
+          :class="{ shake: buttonToShake === 'STEAM' }" 
+          @click="connect('STEAM')"
+        >
+          <img src="https://steamcommunity.com/favicon.ico" class="icon"/> Steam
         </button>
       </div>
     </div>
