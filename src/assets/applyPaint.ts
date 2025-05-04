@@ -85,6 +85,10 @@ const computeDropShadows = (
 };
 
 const computePaintStyle = (paint: PaintRawData): string => {
+  if (!paint?.data?.layers || paint.data.layers?.length === 0) {
+    return '';
+  }
+
   const layers = paint.data.layers.map((layer) => {
     switch (layer.ty.__typename) {
       case 'PaintLayerTypeLinearGradient':
