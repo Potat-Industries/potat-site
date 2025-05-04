@@ -11,6 +11,7 @@ export default defineConfig({
   ],
   server: {
     port: 3112,
+    allowedHosts: ['potat.industries'],
   },
   resolve: {
     alias: {

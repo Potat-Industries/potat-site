@@ -4,7 +4,7 @@ import { default as eventBus } from '../assets/eventBus';
 import { brightenColor, delay } from '../assets/utilities';
 import { fetchBackend } from '../assets/request';
 import { TokenUserData, TwitchUser, UserState } from '../types/misc';
-import { applyPaint } from '../assets/applyPaint';
+import computePaintStyle from '../assets/applyPaint';
 
 const
 
@@ -53,7 +53,10 @@ assignUser = async (): Promise<void> => {
     document.querySelector('.twitch-user span')?.setAttribute('style', `color: ${adjustedColor}`);
   }
 
-  if (userData?.userPaint) applyPaint(userData.userPaint, '.twitch-user span');
+  if (userData?.userPaint) {
+    const paintStyle = computePaintStyle(userData.userPaint);
+    document.querySelector('.twitch-user span')?.setAttribute('style', `${paintStyle}`);
+  }
 },
 
 handleMessage = (event: MessageEvent) => {

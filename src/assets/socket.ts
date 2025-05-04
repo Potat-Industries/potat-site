@@ -2,16 +2,13 @@
 import { default as eventBus } from '../assets/eventBus';
 
 export class StatsSocket {
-  private static instance: StatsSocket
-
   private socket: WebSocket | null = null;
 
-  private constructor(private readonly url: string) {
-    this.connect();
-  }
+  private readonly url: string;
 
-  public static new(uri: string): StatsSocket {
-    return this.instance ?? (this.instance = new this(uri))
+  public constructor(url: string) {
+    this.url = url;
+    this.connect();
   }
 
   private connect(): void {
@@ -37,4 +34,3 @@ export class StatsSocket {
 
   private reconnect() { setTimeout(this.connect.bind(this), 2500); }
 }
-

@@ -1,93 +1,133 @@
-/* eslint-disable no-bitwise */
+/* eslint-disable no-confusing-arrow */
+/* eslint-disable no-underscore-dangle */
 
-import { ColorStop, Shadow } from '../types/misc';
+import type {
+  ComputedLayerStyle,
+  PaintLayerTypeImage,
+  PaintLayerTypeLinearGradient,
+  PaintLayerTypeRadialGradient,
+  PaintLayerTypeSingleColor,
+  PaintRawData,
+} from '../types/misc';
 
-export interface Paint {
-  id: string;
-  name: string;
-  function: 'LINEAR_GRADIENT' | 'RADIAL_GRADIENT' | 'URL';
-  stops?: ColorStop[];
-  angle?: number;
-  repeat?: boolean;
-  image_url?: string;
-  shadows?: Shadow[];
-}
+const computeLinearGradientLayer = (
+  layer: PaintLayerTypeLinearGradient,
+  opacity: number,
+): ComputedLayerStyle => {
+  if (layer.stops.length === 0) {
+    return undefined;
+  }
 
-const convertColorStop = (stop: ColorStop): string => {
-  const colorString = `#${(stop.color >>> 0).toString(16).padStart(8, '0')}`;
-  return `${colorString} ${stop.at * 100}%`;
+  const prefix = layer.repeating ? 'repeating-' : '';
+  const stops = layer.stops.map((stop) => `${stop.color.hex} ${stop.at * 100}%`).join(', ');
+  const gradient = `${prefix}linear-gradient(${layer.angle}deg, ${stops})`;
+  return {
+    opacity,
+    image: gradient,
+  };
 };
 
-export function applyPaint(paint: Paint, cssClass: string): void {
-  const editText = cssClass.includes('span')
-    ? document.querySelector(cssClass) as HTMLElement
-    : document.getElementById(cssClass) as HTMLElement;
-
-  if (!editText) return;
-
-  editText.style.color = 'transparent';
-  editText.style.webkitBackgroundClip = 'text';
-  editText.style.backgroundClip = 'text';
-
-  if (paint.function === 'LINEAR_GRADIENT' && paint.stops && paint.stops.length > 0) {
-    const gradientStops = paint.stops.map(convertColorStop);
-    const gradientDirection = `${paint.angle}deg`;
-    const gradient = paint.repeat
-      ? `repeating-linear-gradient(${gradientDirection}, ${gradientStops.join(', ')})`
-      : `linear-gradient(${gradientDirection}, ${gradientStops.join(', ')})`;
-    editText.style.backgroundImage = gradient;
-  } else if (paint.function === 'RADIAL_GRADIENT' && paint.stops && paint.stops.length > 0) {
-    const gradientStops = paint.stops.map(convertColorStop);
-    const gradientRepeat = paint.repeat ? 'repeating-' : '';
-    const gradient = `${gradientRepeat}radial-gradient(circle, ${gradientStops.join(', ')})`;
-    editText.style.backgroundImage = gradient;
-    editText.style.backgroundSize = '100% auto';
-  } else if (paint.function === 'URL' && paint.image_url) {
-    editText.style.backgroundImage = `url('${paint.image_url}')`;
-    editText.style.backgroundSize = '100% auto';
+const computeRadialGradientLayer = (
+  layer: PaintLayerTypeRadialGradient,
+  opacity: number,
+): ComputedLayerStyle => {
+  if (layer.stops.length === 0) {
+    return undefined;
   }
 
-  if (paint.shadows && paint.shadows.length > 0) {
-    const dropShadows = paint.shadows.map((shadow) => {
-      const colorString = `#${(shadow.color >>> 0).toString(16).padStart(8, '0')}`;
-      return `drop-shadow(${colorString} ${shadow.x_offset}px ${shadow.y_offset}px ${shadow.radius}px)`;
-    });
-    editText.style.filter = dropShadows.join(' ');
-  } else {
-    editText.style.filter = '';
-  }
-}
-
-export const computePaintStyle = (p: Paint): string => {
-  if (!p) {
-    console.warn('No paint provided');
-    return '';
-  }
-  let style = 'color: transparent; -webkit-background-clip: text; background-clip: text;';
-  if (p.function === 'LINEAR_GRADIENT' && p.stops && p.stops.length > 0) {
-    const gradientStops = p.stops.map(convertColorStop);
-    const gradientDirection = `${p.angle}deg`;
-    const gradient = p.repeat
-      ? `repeating-linear-gradient(${gradientDirection}, ${gradientStops.join(', ')})`
-      : `linear-gradient(${gradientDirection}, ${gradientStops.join(', ')})`;
-    style += ` background-image: ${gradient};`;
-  } else if (p.function === 'RADIAL_GRADIENT' && p.stops && p.stops.length > 0) {
-    const gradientStops = p.stops.map(convertColorStop);
-    const gradientRepeat = p.repeat ? 'repeating-' : '';
-    const gradient = `${gradientRepeat}radial-gradient(circle, ${gradientStops.join(', ')})`;
-    style += ` background-image: ${gradient}; background-size: 100% auto;`;
-  } else if (p.function === 'URL' && p.image_url) {
-    style += ` background-image: url('${p.image_url}'); background-size: 100% auto;`;
-  }
-
-  if (p.shadows && p.shadows.length > 0) {
-    const dropShadows = p.shadows.map((shadow) => {
-      const colorString = `#${(shadow.color >>> 0).toString(16).padStart(8, '0')}`;
-      return `drop-shadow(${colorString} ${shadow.x_offset}px ${shadow.y_offset}px ${shadow.radius}px)`;
-    });
-    style += ` filter: ${dropShadows.join(' ')};`;
-  } else {
-    style += ' filter: none;';
-  }
-  return style;
+  const prefix = layer.repeating ? 'repeating-' : '';
+  const shape = layer.shape === 'CIRCLE' ? 'circle' : 'ellipse';
+  const stops = layer.stops.map((stop) => `${stop.color.hex} ${stop.at * 100}%`).join(', ');
+  const gradient = `${prefix}radial-gradient(${shape}, ${stops})`;
+  return {
+    opacity,
+    image: gradient,
+  };
 };
+
+const computeImageLayer = (
+  layer: PaintLayerTypeImage,
+  opacity: number,
+): ComputedLayerStyle => {
+  const isAnimated = layer.images.some((img) => img.frameCount > 1);
+  const img = layer.images.find(
+    (i) => i.scale === 1 && (isAnimated ? i.frameCount > 1 : true),
+  );
+
+  if (!img) {
+    return undefined;
+  }
+
+  return {
+    opacity,
+    image: `url(${img.url})`,
+  };
+};
+
+const computeSingleColorLayer = (
+  layer: PaintLayerTypeSingleColor,
+  opacity: number,
+): ComputedLayerStyle => ({
+  opacity,
+  color: layer.color.hex,
+});
+
+const computeDropShadows = (
+  shadows: PaintRawData['data']['shadows'],
+): string | undefined => {
+  if (shadows.length === 0) {
+    return undefined;
+  }
+
+  return shadows
+    .map((s) => `drop-shadow(${s.color.hex} ${s.offsetX}px ${s.offsetY}px ${s.blur}px)`)
+    .join(' ');
+};
+
+const computePaintStyle = (paint: PaintRawData): string => {
+  const layers = paint.data.layers.map((layer) => {
+    switch (layer.ty.__typename) {
+      case 'PaintLayerTypeLinearGradient':
+        return computeLinearGradientLayer(layer.ty, layer.opacity);
+      case 'PaintLayerTypeRadialGradient':
+        return computeRadialGradientLayer(layer.ty, layer.opacity);
+      case 'PaintLayerTypeImage':
+        return computeImageLayer(layer.ty, layer.opacity);
+      case 'PaintLayerTypeSingleColor':
+        return computeSingleColorLayer(layer.ty, layer.opacity);
+      default:
+        return undefined;
+    }
+  }).filter((l) => l !== undefined);
+
+  const styleParts = [];
+
+  const backgroundImages = layers.flatMap((l) => l.image ? [l.image] : []);
+  const backgroundColors = layers.flatMap((l) => l.color ? [l.color] : []);
+  const background = [...backgroundColors, ...backgroundImages].join(', ');
+  if (background.trim().length > 0) {
+    styleParts.push(`background: ${background};`);
+  }
+
+  styleParts.push(
+    '-webkit-background-clip: text;',
+    'background-clip: text;',
+    'background-size: cover;',
+    'background-position: center;',
+    'color: transparent;',
+  );
+
+  const filter = computeDropShadows(paint.data.shadows);
+  if (filter !== undefined) {
+    styleParts.push(`filter: ${filter};`);
+  }
+
+  const opacities = layers.map((l) => l.opacity).filter((o) => o < 1);
+  if (opacities.length > 0) {
+    styleParts.push(`opacity: ${Math.min(...opacities)};`);
+  }
+
+  return styleParts.join(' ');
+};
+
+export default computePaintStyle;

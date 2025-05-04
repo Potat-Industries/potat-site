@@ -8,7 +8,7 @@ import "normalize.css";
 import { UserState } from './types/misc';
 const route = useRoute();
 
-StatsSocket.new('wss://stats.potat.app');
+new StatsSocket('wss://stats.potat.app');
 
 const isDropdownVisible = ref(false);
 const isMobileMenuVisible = ref(false);

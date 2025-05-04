@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed, ReactiveEffect } from 'vue';
 import { default as eventBus } from '../assets/eventBus';
-import { applyPaint } from '../assets/applyPaint';
+import computePaintStyle from '../assets/applyPaint';
 import { brightenColor } from '../assets/utilities';
 import { fetchBackend } from '../assets/request';
 import { TwitchUser } from '../types/misc';
@@ -62,7 +62,10 @@ const assignUser = async (): Promise<void> => {
     document.querySelector('.twitch-user span')?.setAttribute('style', `color: ${adjustedColor}`);
   }
 
-  if (userData?.userPaint) applyPaint(userData.userPaint, '.twitch-user span');
+  if (userData?.userPaint) {
+    const paintStyle = computePaintStyle(userData.userPaint);
+    document.querySelector('.twitch-user span')?.setAttribute('style', `${paintStyle}`);
+  }
 }
 
 const handleMessage = (event: MessageEvent) => {

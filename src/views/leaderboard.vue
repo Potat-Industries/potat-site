@@ -4,7 +4,8 @@ import { brightenColor } from '../assets/utilities';
 import { fetchBackend } from '../assets/request';
 import { useRoute } from 'vue-router';
 import router from '../router';
-import { computePaintStyle, Paint } from '../assets/applyPaint';
+import computePaintStyle from '../assets/applyPaint';
+import { PaintRawData } from '../types/misc';
 
 interface Leaderboard {
   bestName: string;
@@ -42,7 +43,7 @@ type BadgeStat = {
 
 type PaintStat = {
   id: string;
-  paint: Paint;
+  paint: PaintRawData;
   owners: number;
 } & Stat;
 
