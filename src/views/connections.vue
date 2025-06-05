@@ -106,6 +106,14 @@ onMounted(() => {
         >
           <img src="https://steamcommunity.com/favicon.ico" class="icon"/> Steam
         </button>
+
+        <button 
+          style="background-color:#9F42C6" 
+          :class="{ shake: buttonToShake === 'TRAKT' }" 
+          @click="connect('TRAKT')"
+        >
+          <img src="https://walter-r2.trakt.tv/hotlink-ok/public/2024/favicon.png" class="icon"/> Trakt
+        </button>
       </div>
     </div>
   </div>
