@@ -92,14 +92,6 @@ onMounted(() => {
         </button>
 
         <button 
-          style="background-color:#1DB954" 
-          :class="{ shake: buttonToShake === 'SPOTIFY' }" 
-          @click="connect('SPOTIFY')"
-        >
-          <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2023/05/Spotify_Primary_Logo_RGB_Black.png" class="icon"/> Spotify
-        </button>
-
-        <button 
           style="background-color:#1b2838" 
           :class="{ shake: buttonToShake === 'STEAM' }" 
           @click="connect('STEAM')"
