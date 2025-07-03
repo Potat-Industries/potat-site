@@ -18,6 +18,8 @@ interface Leaderboard {
   badge_count?: number;
   trivia_wins?: number;
   emote_count?: string;
+  user_count?: string;
+  channel_count?: string;
   scramble_wins?: number;
   command_count?: string;
   user_pfp: string;
@@ -64,8 +66,10 @@ type StvBadgeStat = {
 } & Stat;
 
 const LeaderboardTypes = [
+  'emoteusechannel',
   'commandschannel',
   'emoteschannel',
+  'emoteuseuser',
   'twitchbadges',
   'twitchcolors',
   'commandsuser',
@@ -259,6 +263,8 @@ onUnmounted(() => {
           <option value="twitchcolors">Twitch Chat Colors</option>
           <option value="paintstats">Top 7TV Paints</option>
           <option value="badgestats">Top 7TV Badges</option>
+          <option value="emoteusechannel">Channel Emote Uses</option>
+          <option value="emoteuseuser">User Emote Uses</option>
         </select>
     </div>
 
@@ -363,6 +369,12 @@ onUnmounted(() => {
             </div>
             <div v-else-if="type === 'commandsuser'">
               <div>Total User Commands Used: {{ getLocale(user.command_count) }}</div>
+            </div>
+            <div v-else-if="type === 'emoteusechannel'">
+              <div>Total Channel Emote Uses: {{ getLocale(user.channel_count) }}</div>
+            </div>
+            <div v-else-if="type === 'emoteuseuser'">
+              <div>Total User Emote Uses: {{ getLocale(user.user_count) }}</div>
             </div>
           </div>
         </div>
