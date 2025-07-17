@@ -164,15 +164,12 @@ onMounted(async () => {
 		const userData = await fetchBackend<IAmLazy>(`users/${username}`);
 		const userPrefix = userData?.data?.[0]?.channel?.settings?.prefix;
 		if (!userPrefix) {
-			return
+			return;
 		} 
-
-		console.log('User prefix:', userPrefix);
 
 		if (Array.isArray(userPrefix)) {
 			prefix.value = userPrefix[0];
-		}
-		if (typeof userPrefix === 'string') {
+		} else if (typeof userPrefix === 'string') {
 			prefix.value = userPrefix;
 		}
 	}
