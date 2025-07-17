@@ -227,7 +227,11 @@ fetchNewType = () => {
   fetchLeaderboard(type.value, undefined);
 },
 
-getLocale = (value: string | undefined) => {
+getLocale = (value: string | undefined): string => {
+  if (!value) {
+    return '';
+  }
+
   return parseInt(value as string).toLocaleString();
 }
 

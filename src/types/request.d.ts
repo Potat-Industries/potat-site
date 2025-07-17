@@ -1,5 +1,5 @@
 export interface ExtendedOptions extends RequestInit {
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   auth?: boolean;
 }
 

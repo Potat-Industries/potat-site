@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, reactive } from 'vue';
 import { humanizeDuration } from '../assets/utilities';
 import { Command, KeyString } from '../types/help';
 import router from '../router';
 import { useRoute } from 'vue-router';
+import { fetchBackend } from '../assets/request';
 const route = useRoute();
+
+const prefix = ref<string>('#');
+
+const userState: { value: string | null } = reactive({
+	value: localStorage.getItem('userState')
+});
 
 enum InternalLevels {
   'Blacklisted',
@@ -38,16 +45,16 @@ const
 
 permissions: KeyString = {
   'NONE': 'No Permissions',
-  'SUBSCRIBER': 'Subscriber',
-  'VIP': 'VIP',
-  'MOD': 'Moderator',
-  'AMBASSADOR': 'Ambassador',
+  'SUBSCRIBER': 'Channel Subscriber',
+  'VIP': 'Channel VIP',
+  'MOD': 'Channel Moderator',
+  'AMBASSADOR': 'Channel Ambassador',
   'BROADCASTER': 'Broadcaster',
 },
 
 botPerms: KeyString = {
-  'MOD': 'Moderator',
-  'VIP': 'VIP'
+  'MOD': 'Channel Moderator',
+  'VIP': 'Channel VIP'
 },
 
 changeCommand = (command: Command) => {
@@ -128,7 +135,7 @@ const scrollToSelectedCommand = () => {
 	});
 }
 
-onMounted(() => {
+onMounted(async () => {
 	fetch('https://api.potat.app/help')
 		.then(res => res.json())
 		.then((data) => {
@@ -145,6 +152,30 @@ onMounted(() => {
 			}
 		})
 		.catch(console.error);
+
+	if (userState.value) {
+		const username = JSON.parse(userState.value)?.login;
+		if (!username) {
+			return;
+		}
+
+		type IAmLazy = { channel: { settings: { prefix: string | string[] } } }
+
+		const userData = await fetchBackend<IAmLazy>(`users/${username}`);
+		const userPrefix = userData?.data?.[0]?.channel?.settings?.prefix;
+		if (!userPrefix) {
+			return
+		} 
+
+		console.log('User prefix:', userPrefix);
+
+		if (Array.isArray(userPrefix)) {
+			prefix.value = userPrefix[0];
+		}
+		if (typeof userPrefix === 'string') {
+			prefix.value = userPrefix;
+		}
+	}
 });
 </script>
 
@@ -159,7 +190,7 @@ onMounted(() => {
           <h3 @click="toggleCollapse(category)" :class="{ 'command-category': true, 'collapsed': collapsed[category] }">{{ category }}</h3>
 					<ul class="commands-list" v-show="!collapsed[category]">
 						<li @click="changeCommand(command)" v-for="command in getCategory.get(category)" :key="command.name" class="command-item">
-							<a :class="{ active: command.name === selectedCommand }"><span class="command-prefix">#</span>{{ command.name }}</a>
+							<a :class="{ active: command.name === selectedCommand }"><span class="command-prefix">{{ prefix }}</span>{{ command.name }}</a>
 						</li>
 					</ul>
 				</section>
@@ -175,40 +206,52 @@ onMounted(() => {
 				</nav>
 				<div class="command-details">
 					<div>
-						<p v-if="getCommand.description">
-							<strong>Description: </strong>{{ getCommand.description }}
-						</p>
-						<p v-if="getCommand.usage">
-							<strong>Usage: </strong>{{ getCommand.usage }}
-						</p>
+						<div v-if="getCommand.description" class="description-block">
+							{{ getCommand.description }}
+						</div>
+						<div v-if="getCommand.usage">
+							<strong>Usage: </strong>{{ getCommand.usage.replace(/^#/g, prefix) }}
+						</div>
 						<p v-if="checkArray(getCommand.aliases)">
-							<strong>Aliases: </strong>{{ getCommand.aliases.join(', ') }}
+							<hr class="section-divider">
+							<strong>Aliases: </strong>
+							<a class="alias-bubbles">
+								<span v-for="alias in getCommand.aliases" :key="alias" class="alias-bubble">{{ prefix }}{{ alias }}</span>
+							</a>
 						</p>
 						<p v-if="getCommand.cooldown">
-							<strong>Cooldown: </strong>{{ humanizeDuration(getCommand.cooldown) }}
+							<hr class="section-divider">
+							<strong>Base Cooldown: </strong>{{ humanizeDuration(getCommand.cooldown) }}
 						</p>
-						<p v-if="getCommand.level">
-							<strong>Available to: </strong> {{ InternalLevels[getCommand.level] }}
+						<p v-if="getCommand.level || getCommand.botRequires !== 'none' || getCommand.userRequires !== 'none'">
+							<hr class="section-divider">
+							<h4>Requirements to use:</h4>
+							<ul class="requirements-list">
+								<li v-if="getCommand.level">
+									<strong>Access Level:</strong> {{ InternalLevels[getCommand.level] }}
+								</li>
+								<li v-if="getCommand.userRequires !== 'none'">
+									<strong>User Requires:</strong> {{ permissions[getCommand.userRequires] ?? 'No Permissions' }}
+								</li>
+								<li v-if="getCommand.botRequires !== 'none'">
+									<strong>Bot Requires:</strong> {{ botPerms[getCommand.botRequires] ?? 'No Permissions' }}
+								</li>
+							</ul>
 						</p>
-						<p v-if="getCommand.botRequires !== 'none'">
-							<strong>Bot requires: </strong>{{ botPerms[getCommand.botRequires] }}
-						</p>
-						<p v-if="getCommand.userRequires !== 'none'">
-							<strong>User requires: </strong>{{ permissions[getCommand.userRequires] }}
-						</p>
-						<p>
-							<strong>Whisperable: </strong>{{ getCommand.conditions.whisperable ?? 'false' }}
-						</p>
-						<p v-if="getCommand.conditions.offlineOnly">
-							<strong>Offline only: </strong>{{ getCommand.conditions.offlineOnly }}
-						</p>
-						<p v-if="getCommand.conditions.ignoreBots">
-							<strong>Ignores bots: </strong>{{ getCommand.conditions.ignoreBots }}
-						</p>
-						<p v-if="typeof getCommand.conditions.isNotPipable === 'boolean'">
-							<strong>Can be piped: </strong>{{ !getCommand.conditions.isNotPipable }}
+						<p v-if="Object.keys(getCommand.conditions)?.length">
+							<hr class="section-divider">
+							<strong>Conditions:</strong>
+							<ul>
+								<li v-if="getCommand.conditions.whisperable === true">Whisperable</li>
+								<li v-if="getCommand.conditions.offlineOnly === true">Offline only</li>
+								<li v-if="getCommand.conditions.ignoreBots === true">Ignores bots</li>
+								<li v-if="typeof getCommand.conditions.isNotPipable === 'boolean'">{{ getCommand.conditions.isNotPipable ? 'Cannot be piped' : 'Can be piped' }}</li>
+								<li v-if="getCommand.conditions.superuser === true">Requires Superuser</li>
+								<li v-if="getCommand.conditions.isBlockable === true">Can be Opted-Out From</li>
+							</ul>
 						</p>
 						<p v-if="getCommand.flags?.length">
+							<hr class="section-divider">
 							<strong>Flags: </strong>
 							<div v-for="(flag, index) in getCommand.flags" :key="index" class="flag-details">
 								<p><strong>Name: </strong>{{ flag.name }}</p>
@@ -220,7 +263,7 @@ onMounted(() => {
 								</p>
 								<p v-if="flag.aliases?.length"><strong>Aliases:</strong> {{ flag.aliases.join(', ') }}</p>
 								<p v-if="flag.required"><strong>Required: </strong> {{ flag.required ? 'Yes' : 'No' }}</p>
-								<p v-if="flag.usage"><strong>Usage:</strong> {{ flag.usage }}</p>
+								<p v-if="flag.usage"><strong>Usage:</strong> {{ flag.usage.replace(/^#/g, prefix) }}</p>
 							</div>
 						</p>
 					</div>
@@ -229,6 +272,7 @@ onMounted(() => {
 		</div>
   </div>
 </template>
+
 <style scoped>
 .visible-mobile {
 	display: none;
@@ -273,11 +317,11 @@ onMounted(() => {
   outline-color: #f4f4f4;
 }
 .command-prefix {
-	color: #ccc;
+	color: #666666;
 	padding-right: 1px;
 }
 .command-details {
-  background-color: #1a1a1a;
+  background-color: #474747;
   border-radius: 15px;
   padding: 20px;
   background-color: rgba(31, 31, 31, 0.906);
@@ -309,6 +353,8 @@ onMounted(() => {
 	background: rgba(31, 31, 31, 1);
 	padding: 5px;
 	position: sticky;
+  outline: auto -webkit-focus-ring-color;
+  outline-color: #f4f4f4;
 	top: 60px;
 	z-index: 1;
 	cursor: pointer;
@@ -340,7 +386,52 @@ onMounted(() => {
 	padding: 8px;
 }
 .command-item a.active {
-	color: #ae81ff
+	color: #ae81ff;
+}
+.description-block {
+  background-color: #2a2a2a;
+  border-left: 4px solid #ae81ff;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  color: #f9fafb;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.usage-block pre {
+  display: inline-block;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  font-family: "Fira Code", monospace;
+  font-size: 0.9rem;
+  white-space: pre;
+  margin-top: 0.25rem;
+}
+.alias-bubbles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+.alias-bubble {
+  background-color: #2a2a2a;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  white-space: nowrap;
+  border: 1px solid #444;
+}
+.section-divider {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 1rem 0;
+}
+
+.section-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 button {
   cursor: pointer;
