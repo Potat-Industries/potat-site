@@ -29,5 +29,5 @@ const host = ref(window.location.hostname);
     display: flex;
     border: none;
 		border-radius: 15px;
-  }
+	}
 </style>

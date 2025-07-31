@@ -28,4 +28,10 @@ const host = ref(window.location.hostname);
     border: none;
 		border-radius: 15px;
   }
+
+	@media (max-width: 600px) {
+		iframe#twitch-chat-embed {
+			width: 100%;
+		}
+	}
 </style>

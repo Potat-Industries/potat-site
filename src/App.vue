@@ -134,6 +134,10 @@ watch(route, () => {
 		<li class="login-button-container mobile-menu"><LoginButton/></li>
 	</ul>
 
+	<div class="temp-bar">
+			<span >Going to Twitchcon? By using my <a href="https://www.ticketfairy.com/r/39179/1949214" target="_blank">referral code</a> while purchasing a ticket you will unlock the <img src="https://static-cdn.jtvnw.net/badges/v1/d139bccf-8184-4fec-a970-cd8d81a7f51a/2" alt="Chrome Star Badge" /> <a href="https://www.streamdatabase.com/twitch/global-badges/twitchcon-referral-program-2025-chrome-star/1" target="_blank">Chrome Star Badge</a>, and support me! </span>
+	</div>
+
 	<div class="main-container">
 		<router-view></router-view>
 	</div>
@@ -143,8 +147,6 @@ watch(route, () => {
 
 .top-bar {
   position: sticky;
-  top: 0;
-  width: 100%;
 	margin: 0;
 	list-style: none;
   background-color: rgba(31, 31, 31, 0.8);
@@ -155,7 +157,40 @@ watch(route, () => {
   user-select: none;
 	font-size: 0.8em;
 }
+.temp-bar {
+  background-color: rgba(112, 69, 67, 0.8);
+  outline: auto;
+  outline-color: rgba(31, 31, 31, 0.8);
+  padding: 10px;
+	justify-content: center;
+	text-align: center;
+  display: flex;
+  z-index: 10;
+  font-size: 1em;
+  position: sticky;
+	backdrop-filter: blur(2px);
 
+	img {
+		width: 20px;
+		height: 20px;
+		vertical-align: middle;
+	}
+
+	a:link {
+		color: #aaccff; 
+		text-decoration: underline;
+	}
+
+	a:visited {
+		color: #dab6ff;
+		text-decoration: underline;
+	}
+
+	a:hover {
+		color: #ffaaaa;
+		text-decoration: underline;
+	}
+}
 .nav-link {
   margin-left: 10px;
   padding: 12px;
@@ -167,16 +202,13 @@ watch(route, () => {
   cursor: pointer;
   position: relative;
 }
-
 .nav-link.router-link-active {
   background-color: #6441a4;
   color: #fff;
 }
-
 .external-link {
   text-decoration: none;
 }
-
 .main-container {
   -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
@@ -184,12 +216,10 @@ watch(route, () => {
 	max-width: 1200px;
 	margin: 20px auto 0;
 }
-
 .login-button-container {
   margin-left: auto;
   margin-right: 10px;
 }
-
 .dropdown-content:not(.visible) {
   display: none;
 }
