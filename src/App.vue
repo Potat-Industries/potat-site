@@ -165,7 +165,7 @@ watch(route, () => {
 	justify-content: center;
 	text-align: center;
   display: flex;
-  z-index: 10;
+  z-index: 9;
   font-size: 1em;
   position: sticky;
 	backdrop-filter: blur(2px);
