@@ -41,7 +41,20 @@ type BadgeStat = {
   url?: string;
   clickAction?: string;
   name: string;
+  version: number;
 } & Stat;
+
+type UserBadgeOwnedStat = {
+  badge: string;
+  user_pfp: string;
+  user_color: string;
+  bestName: string;
+  owned_badges: number;
+} & Stat;
+
+type BadgeOwnersStat = BadgeStat & {
+  total_owners: string;
+}
 
 type PaintStat = {
   id: string;
@@ -66,6 +79,8 @@ type StvBadgeStat = {
 } & Stat;
 
 const LeaderboardTypes = [
+  'twitchownedbadges',
+  'twitchbadgeowners',
   'emoteusechannel',
   'commandschannel',
   'emoteschannel',
@@ -102,6 +117,8 @@ type = ref<LeaderboardTypes>(inputType ?? 'potatoes'),
 cursor = ref<string | undefined>(undefined),
 leaderboarders = ref<Leaderboard[]>([]),
 badgeStats = ref<BadgeStat[]>([]),
+ownedBadgeUserStats = ref<UserBadgeOwnedStat[]>([]),
+badgeOwnerCounts = ref<BadgeOwnersStat[]>([]),
 colorStats = ref<ColorStat[]>([]),
 paintStats = ref<PaintStat[]>([]),
 stvBadgeStats = ref<StvBadgeStat[]>([]),
@@ -134,7 +151,24 @@ fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => 
         } else {
           return a.rank - b.rank;
         }
+      }) ?? [];
+    } else if (type === 'twitchownedbadges') {
+      const response = await fetchBackend<UserBadgeOwnedStat>(`twitch/badges`, {
+        params: { first: 100, owned: true, after: last }
       });
+
+      ownedBadgeUserStats.value = response?.data ?? [];
+    } else if (type === 'twitchbadgeowners') {
+      const response = await fetchBackend<BadgeOwnersStat>(`twitch/badges`, {
+        params: { first: 100, owners: true, after: last }
+      }).then(res => res?.data?.map(b => {
+        const lastSlashIndex = b.url?.lastIndexOf("/");
+        b.url = b.url?.substring(0, (lastSlashIndex ?? 0) + 1) + "3";
+
+        return b;
+      }).filter(Boolean)as BadgeOwnersStat[]);
+
+      badgeOwnerCounts.value = response ?? [];
     } else if (type === 'twitchcolors') {
       const response = await fetchBackend<ColorStat>(`twitch/colors`, {
         params: { 
@@ -184,7 +218,7 @@ fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => 
           } else {
             return b.percentage - a.percentage;
           }
-        });
+        }) ?? [];
     } else {
       const response = await fetchBackend<Leaderboard>(`leaderboard`, {
         params: {
@@ -263,7 +297,9 @@ onUnmounted(() => {
           <option value="emotesuser">User Emote Actions</option>
           <option value="commandschannel">Channel Commands Used</option>
           <option value="commandsuser">User Commands Used</option>
-          <option value="twitchbadges">Twitch Global Badges</option>
+          <option value="twitchbadges">Twitch Global Badges Active</option>
+          <option value="twitchbadgeowners">Twitch Global Badge Owners</option>
+          <option value="twitchownedbadges">Twitch Top Owned Badges</option>
           <option value="twitchcolors">Twitch Chat Colors</option>
           <option value="paintstats">Top 7TV Paints</option>
           <option value="badgestats">Top 7TV Badges</option>
@@ -293,9 +329,41 @@ onUnmounted(() => {
         </div>
         <div class="text-content">
           <div><strong>Badge:</strong> {{ badge.name ?? badge.badge }}</div>
-          <div><strong>Users Seen:</strong> {{ badge.user_count.toLocaleString() }}</div>
+          <div><strong>Users Active:</strong> {{ badge.user_count.toLocaleString() }}</div>
           <div><strong>Percentage:</strong> {{ badge.percentage.toFixed(6) }}%</div>
           <div><strong>Rank:</strong> {{ badge.rank }}</div>
+        </div>
+      </li>
+    </ul>
+
+    <ul v-if="badgeOwnerCounts.length && type === 'twitchbadgeowners'" class="leaderboard-list">
+      <li v-for="badge in badgeOwnerCounts" :key="badge.badge" class="leaderboard-item">
+        <div class="badge-picture">
+          <a :href="badge.clickAction" target="_blank">
+            <img :src="badge.url" alt="Badge"/>
+          </a>
+        </div>
+        <div class="text-content">
+          <div><strong>Badge:</strong> {{ badge.name ?? badge.badge }}</div>
+          <div><strong>Owners:</strong> {{ Number(badge.total_owners).toLocaleString() }}</div>
+        </div>
+      </li>
+    </ul>
+
+    <ul v-if="ownedBadgeUserStats.length && type === 'twitchownedbadges'" class="leaderboard-list">
+      <li v-for="badge in ownedBadgeUserStats" :key="badge.bestName" class="leaderboard-item">
+        <div class="profile-picture">
+          <a :href="`https://twitch.tv/${badge.bestName?.toLowerCase()}`" target="_blank">
+            <img :src="badge.user_pfp ?? 'https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-600x600.png'"/>
+          </a>
+        </div>
+        <div class="text-content">
+          <div class="rank-name">
+            <a :href="`https://twitch.tv/${badge.bestName?.toLowerCase()}`" target="_blank">
+              <strong :style="{ color: brightenColor(badge.user_color) }">{{ badge.bestName }}</strong>
+            </a>
+          </div>
+          <span>Owned Badges: {{ Number(badge.owned_badges)?.toLocaleString() }}</span>
         </div>
       </li>
     </ul>
@@ -334,7 +402,7 @@ onUnmounted(() => {
       <li v-for="user in leaderboarders" :key="user.bestName" class="leaderboard-item">
         <div class="profile-picture">
           <a :href="`https://twitch.tv/${user.bestName.toLowerCase()}`" target="_blank">
-            <img :src="user.user_pfp ?? 'https://gachi.gay/sgJNs'"/>
+            <img :src="user.user_pfp ?? 'https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-600x600.png'"/>
           </a>
         </div>
         <div class="text-content">
@@ -449,7 +517,7 @@ onUnmounted(() => {
   margin-right: 5px;
   width: 80px;
   height: 80px;
-  vertical-align: middle;
+  vertical-align: cover;
 }
 
 .text-content {
