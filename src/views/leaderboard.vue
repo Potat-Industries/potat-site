@@ -330,8 +330,8 @@ onUnmounted(() => {
         <div class="text-content">
           <div><strong>Badge:</strong> {{ badge.name ?? badge.badge }}</div>
           <div><strong>Users Active:</strong> {{ badge.user_count.toLocaleString() }}</div>
-          <div><strong>Percentage:</strong> {{ badge.percentage.toFixed(6) }}%</div>
-          <div><strong>Rank:</strong> {{ badge.rank }}</div>
+          <div><strong>Percentage:</strong> {{ badge.percentage?.toFixed(6) }}%</div>
+          <div><strong>Rank:</strong> {{ badgeStats.indexOf(badge) + 1 }}</div>
         </div>
       </li>
     </ul>
