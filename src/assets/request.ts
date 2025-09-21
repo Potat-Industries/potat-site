@@ -19,7 +19,7 @@ async function parseResponse<T>(res: Response): Promise<ParsedRes<T>> {
 
 export async function makeRequest<T = unknown>(
   url: string,
-  options?: ExtendedOptions,
+  options: ExtendedOptions = {},
 ): Promise< ParsedRes<T>> {
   if (options?.params) {
     const filteredParams = Object.fromEntries(
@@ -32,10 +32,18 @@ export async function makeRequest<T = unknown>(
 
   if (options?.auth) {
     options.headers = {
+      'X-Potat-User-Agent': `Potat-Site: ${navigator.userAgent}`,
       ...options.headers,
       authorization: `Bearer ${localStorage.getItem('authorization')}`,
     };
+  } else {
+    options.headers = {
+      'X-Potat-User-Agent': `Potat-Site: ${navigator.userAgent}`,
+      ...options?.headers,
+    };
   }
+
+  console.log(options);
 
   const response = await fetch(url, options);
   return parseResponse<T>(response);
