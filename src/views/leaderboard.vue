@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router';
 import router from '../router';
 import computePaintStyle from '../assets/applyPaint';
 import { PaintRawData } from '../types/misc';
+const potatoImage = '/tatov2.png';
 
 interface Leaderboard {
   bestName: string;
@@ -124,6 +125,7 @@ paintStats = ref<PaintStat[]>([]),
 stvBadgeStats = ref<StvBadgeStat[]>([]),
 map = new Map(),
 loading = ref(false),
+scrollTimeout = ref<number | undefined>(undefined),
 
 fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => {
 	if (loading.value) {
@@ -240,11 +242,15 @@ fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => 
 },
 
 handleScroll = () => {
-	// if scroll to the end of the window
-	if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
-		if (!cursor.value) return;
-		fetchLeaderboard(type.value, cursor.value);
-	}
+  if (scrollTimeout.value) return;
+  scrollTimeout.value = window.setTimeout(() => {
+    scrollTimeout.value = undefined;
+    // if scroll to the end of the window
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
+      if (!cursor.value) return;
+      fetchLeaderboard(type.value, cursor.value);
+    }
+  }, 50);
 },
 
 fetchNewType = () => {
@@ -320,7 +326,11 @@ onUnmounted(() => {
       </li>
     </ul>
 
-    <ul v-if="badgeStats.length && type === 'twitchbadges'" class="leaderboard-list">
+    <div v-if="loading" class="loading-indicator">
+      <img :src="potatoImage" alt="Loading potato" class="spinning-potato" />
+      Loading...
+    </div>
+  <ul v-if="badgeStats.length && type === 'twitchbadges'" class="leaderboard-list">
       <li v-for="badge in badgeStats" :key="badge.badge" class="leaderboard-item">
         <div class="badge-picture">
           <a :href="badge.clickAction" target="_blank">
@@ -399,7 +409,7 @@ onUnmounted(() => {
     </ul>
 
     <ul class="leaderboard-list" v-if="leaderboarders.length && type !== 'twitchbadges'">
-      <li v-for="user in leaderboarders" :key="user.bestName" class="leaderboard-item">
+      <li v-for="(user, idx) in leaderboarders" :key="user.bestName" class="leaderboard-item">
         <div class="profile-picture">
           <a :href="`https://twitch.tv/${user.bestName.toLowerCase()}`" target="_blank">
             <img :src="user.user_pfp ?? 'https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-600x600.png'"/>
@@ -407,7 +417,7 @@ onUnmounted(() => {
         </div>
         <div class="text-content">
           <div class="rank-name">
-            #{{ leaderboarders.indexOf(user) + 1 }}
+            #{{ idx + 1 }}
             <a :href="`https://twitch.tv/${user.bestName.toLowerCase()}`" target="_blank">
               <strong :style="{ color: brightenColor(user.user_color) }">{{ user.bestName }}</strong>
             </a>
@@ -558,5 +568,31 @@ onUnmounted(() => {
   height: 80px;
   margin-right: 10px;
   margin-left: 10px
+}
+
+.loading-indicator {
+  text-align: center;
+  padding: 40px;
+  font-size: 24px;
+  color: #e5e4e4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.spinning-potato {
+  width: 40px;
+  height: 40px;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
