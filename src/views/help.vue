@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, reactive } from 'vue';
+import { ref, onMounted, computed, reactive, watch } from 'vue';
 import { humanizeDuration } from '../assets/utilities';
 import { Command, KeyString } from '../types/help';
 import router from '../router';
@@ -110,6 +110,16 @@ filteredCommands = computed((): Command[] => {
       command.title.toLowerCase().includes(query))
     );
   });
+});
+
+watch(() => route.params.command, (newCommand) => {
+	if (newCommand && commands.value.length > 0) {
+		const cmd = commands.value.find(command => command.name === newCommand);
+		if (cmd) {
+			selectedCommand.value = cmd.name;
+			setTimeout(scrollToSelectedCommand, 200);
+		}
+	}
 });
 
 const toggleCollapse = (category: string) => {
