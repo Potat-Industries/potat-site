@@ -138,12 +138,26 @@ watch(route, () => {
 			<span>Getting your stream in the Halloween spirit? <img src="/pumpkin.png" alt="🎃" class="pumpkin-emoji" /> Try the <router-link to="/help/mergeset">mergeset</router-link> or <router-link to="/help/copyset">copyset</router-link> commands to spookify your emotes!</span>
 		</div>
 
-	<div class="main-container">
-		<router-view :key="$route.fullPath"></router-view>
-	</div>
+		<div class="main-container">
+			<router-view v-slot="{ Component }">
+				<transition name="fade" mode="out-in">
+					<component :is="Component" />
+				</transition>
+			</router-view>
+		</div>
 </template>
 
+
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity 0.15s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+	opacity: 0;
+}
 
 .top-bar {
   position: sticky;
