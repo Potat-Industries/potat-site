@@ -39,11 +39,15 @@ const onDocumentClick =  (event: MouseEvent) => {
 
 onMounted(() => {
 	document.addEventListener('click', onDocumentClick);
-	const userState = localStorage.getItem('userState');
-	if (typeof userState === 'string') {
-		const parsed = JSON.parse(userState) as UserState;
-		username.value = parsed.login;
-	}
+		const userState = localStorage.getItem('userState');
+		if (typeof userState === 'string') {
+			try {
+				const parsed = JSON.parse(userState) as UserState;
+				username.value = parsed.login;
+			} catch (err) {
+				console.warn('Invalid userState in localStorage', err);
+			}
+		}
 	const app = document.getElementById('app');
 	if (app) {
 		app.style.backgroundImage = `url('/Home.png')`;
