@@ -37,37 +37,23 @@ const onDocumentClick =  (event: MouseEvent) => {
 	}
 };
 
-function lazySetBackgroundImage() {
-	const app = document.getElementById('app');
-
-	if (!app) {
-		console.error('Cannot set background image, app element not found!!');
-
-		return;
-	}
-
-	app.style.backgroundImage = `url('/Home.png')`;
-}
-
 onMounted(() => {
-  document.addEventListener('click', onDocumentClick);
-
+	document.addEventListener('click', onDocumentClick);
 	const userState = localStorage.getItem('userState');
 	if (typeof userState === 'string') {
-		const parsed = JSON.parse(userState) as UserState;
-		username.value = parsed.login;
+		try {
+			const parsed = JSON.parse(userState) as UserState;
+			username.value = parsed.login;
+		} catch (err) {
+			console.warn('Invalid userState in localStorage', err);
+		}
 	}
-
-	if (document.readyState === 'complete') {
-		lazySetBackgroundImage();
-	} else {
-		document.addEventListener('readystatechange', () => {
-			if (document.readyState === 'complete') {
-				lazySetBackgroundImage();
-			}
-		});
+	const app = document.getElementById('app');
+	if (app) {
+		app.style.backgroundImage = `url('/Home.png')`;
 	}
 });
+
 
 onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick);
