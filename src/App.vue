@@ -37,17 +37,18 @@ const onDocumentClick =  (event: MouseEvent) => {
 	}
 };
 
-function lazySetBackgroundImage() {
-	const app = document.getElementById('app');
-
-	if (!app) {
-		console.error('Cannot set background image, app element not found!!');
-
-		return;
+onMounted(() => {
+	document.addEventListener('click', onDocumentClick);
+	const userState = localStorage.getItem('userState');
+	if (typeof userState === 'string') {
+		const parsed = JSON.parse(userState) as UserState;
+		username.value = parsed.login;
 	}
-
-	app.style.backgroundImage = `url('/Home.png')`;
-}
+	const app = document.getElementById('app');
+	if (app) {
+		app.style.backgroundImage = `url('/Home.png')`;
+	}
+});
 
 onMounted(() => {
   document.addEventListener('click', onDocumentClick);
@@ -58,15 +59,6 @@ onMounted(() => {
 		username.value = parsed.login;
 	}
 
-	if (document.readyState === 'complete') {
-		lazySetBackgroundImage();
-	} else {
-		document.addEventListener('readystatechange', () => {
-			if (document.readyState === 'complete') {
-				lazySetBackgroundImage();
-			}
-		});
-	}
 });
 
 onUnmounted(() => {
