@@ -133,19 +133,23 @@ onMounted((): void => {
       <span>{{ twitchUser?.name }}</span>
     </div>
     <button v-show="isHovering" class="twitch-button sign-out-button" @click="signOut">
-      <img src="/logout.svg" style="width: 1.5em; height: 1.5em;" />
+      <img src="/logout.svg" class="icon-size" />
       <span class="button-text">Sign out</span>
     </button>
   </div>
   <template v-else>
     <button class="twitch-button" :class="{ flash: shouldFlash }" @click="signIn">
-      <img src="/Twitch-icon-white.png" style="width: 1.5em; height: 1.5em;" />
+      <img src="/Twitch-icon-white.png" class="icon-size" />
       <span class="button-text">Sign in</span>
     </button>
   </template>
 </template>
 
 <style scoped>
+.icon-size {
+  width: 1.5em;
+  height: 1.5em;
+}
 .twitch-button {
 	width: 100%;
   font-size: 0.88em;
