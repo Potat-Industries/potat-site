@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed, ReactiveEffect } from 'vue';
+import { ref, onMounted, reactive, computed, onUnmounted } from 'vue';
 import { default as eventBus } from '../assets/eventBus';
 import computePaintStyle from '../assets/applyPaint';
 import { brightenColor } from '../assets/utilities';
@@ -28,6 +28,8 @@ const signIn = (): void => {
 		'_blank',
 		'width=600,height=400'
 	);
+
+  window.addEventListener('message', handleMessage);
 };
 
 const signOut = async (): Promise<void> => {
@@ -110,8 +112,6 @@ onMounted((): void => {
   eventBus.$on('userState', (newState: string) => {
     userState.value = newState;
   });
-
-  window.addEventListener('message', handleMessage);
 });
 
 </script>
