@@ -16,6 +16,7 @@ const userState: { value: string | null } = reactive({
 
 const twitchUser = ref<TwitchUser | null>(null);
 const shouldFlash = ref(false);
+const isHovering = ref(false);
 
 const isAuthenticated = computed(() => {
   return authToken.value !== null && userState.value !== null;
@@ -34,6 +35,7 @@ const signOut = async (): Promise<void> => {
   authToken.value = null;
   userState.value = null;
   twitchUser.value = null;
+  eventBus.$emit('signOut');
 };
 
 const flashButton = () => {
@@ -115,14 +117,26 @@ onMounted((): void => {
 </script>
 
 <template>
-  <template v-if="isAuthenticated">
-    <div class="twitch-user" @click="signOut">
-      <img box-shadow="0 0 0 2px #8763b8" v-if="twitchUser && twitchUser.twitch_pfp"
-        :src="twitchUser.stv_pfp ? twitchUser.stv_pfp : twitchUser.twitch_pfp" alt="Twitch Profile Picture"
-        class="profile-picture" />
+  <div 
+    v-if="isAuthenticated" 
+    class="twitch-user-container"
+    @mouseenter="isHovering = true"
+    @mouseleave="isHovering = false"
+  >
+    <div v-show="!isHovering" class="twitch-user">
+      <img 
+        v-if="twitchUser && twitchUser.twitch_pfp"
+        :src="twitchUser.stv_pfp ? twitchUser.stv_pfp : twitchUser.twitch_pfp" 
+        alt="Twitch Profile Picture"
+        class="profile-picture" 
+      />
       <span>{{ twitchUser?.name }}</span>
     </div>
-  </template>
+    <button v-show="isHovering" class="twitch-button sign-out-button" @click="signOut">
+      <img src="/logout.svg" style="width: 1.5em; height: 1.5em;" />
+      <span class="button-text">Sign out</span>
+    </button>
+  </div>
   <template v-else>
     <button class="twitch-button" :class="{ flash: shouldFlash }" @click="signIn">
       <img src="/Twitch-icon-white.png" style="width: 1.5em; height: 1.5em;" />
@@ -205,5 +219,19 @@ button:hover {
     background-color: #ff4d4d;
     box-shadow: 0 0 15px #ff4d4d;
   }
+}
+
+.twitch-user-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sign-out-button {
+  background-color: #c73434;
+}
+
+.sign-out-button:hover {
+  background-color: #e04a4a;
 }
 </style>
