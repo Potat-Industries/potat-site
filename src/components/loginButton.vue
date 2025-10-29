@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, computed, ReactiveEffect } from 'vue';
-import { default as eventBus } from '../assets/eventBus';
+import { ref, onMounted, reactive, computed, onUnmounted } from 'vue';
+import eventBus from '../assets/eventBus';
 import computePaintStyle from '../assets/applyPaint';
 import { brightenColor } from '../assets/utilities';
 import { fetchBackend } from '../assets/request';
@@ -16,24 +16,45 @@ const userState: { value: string | null } = reactive({
 
 const twitchUser = ref<TwitchUser | null>(null);
 const shouldFlash = ref(false);
+const isHovering = ref(false);
+const isSigningOut = ref(false);
 
 const isAuthenticated = computed(() => {
   return authToken.value !== null && userState.value !== null;
 });
 
+let loginPopupTimer: ReturnType<typeof setInterval> | undefined;
+
 const signIn = (): void => {
-  window.open(
-		`https://api.${window.location.host}/login`,
-		'_blank',
-		'width=600,height=400'
-	);
+  const loginWindow = window.open(
+    `https://api.${window.location.host}/login`,
+    '_blank',
+    'width=600,height=400'
+  );
+
+  window.addEventListener('message', handleMessage);
+
+  loginPopupTimer = setInterval(() => {
+    if (loginWindow && loginWindow.closed) {
+      clearInterval(loginPopupTimer);
+      window.removeEventListener('message', handleMessage);
+    }
+  }, 500);
 };
 
 const signOut = async (): Promise<void> => {
+  if (isSigningOut.value) return;
+  isSigningOut.value = true;
+
   localStorage.clear();
   authToken.value = null;
   userState.value = null;
   twitchUser.value = null;
+  eventBus.$emit('signOut');
+
+  setTimeout(() => {
+    isSigningOut.value = false;
+  }, 1000);
 };
 
 const flashButton = () => {
@@ -51,7 +72,7 @@ const assignUser = async (): Promise<void> => {
   if ([401, 418].includes(data?.statusCode)) {
     console.log('Signing out due to error:', data?.errors?.[0]?.message);
     signOut();
-    return eventBus.$emit('signOut');
+    return;
   }
 
   const userData = data.data[0];
@@ -88,13 +109,12 @@ const handleMessage = (event: MessageEvent) => {
     user: JSON.stringify({ id, login, name, stv_id, is_channel }),
   });
 
-  eventBus.$on('signOut', () => {
-    signOut();
-  });
-
   userState.value = JSON.stringify({ id, login, name, stv_id, is_channel });
-  assignUser();
+  setTimeout(() => assignUser(), 500);
 
+  if (loginPopupTimer) {
+    clearInterval(loginPopupTimer);
+  }
   window.removeEventListener('message', handleMessage);
 };
 
@@ -109,29 +129,49 @@ onMounted((): void => {
     userState.value = newState;
   });
 
-  window.addEventListener('message', handleMessage);
+  eventBus.$on('signOut', signOut);
+});
+
+onUnmounted(() => {
+  eventBus.$off('signOut', signOut);
 });
 
 </script>
 
 <template>
-  <template v-if="isAuthenticated">
-    <div class="twitch-user" @click="signOut">
-      <img box-shadow="0 0 0 2px #8763b8" v-if="twitchUser && twitchUser.twitch_pfp"
-        :src="twitchUser.stv_pfp ? twitchUser.stv_pfp : twitchUser.twitch_pfp" alt="Twitch Profile Picture"
-        class="profile-picture" />
+  <div 
+    v-if="isAuthenticated" 
+    class="twitch-user-container"
+    @mouseenter="isHovering = true"
+    @mouseleave="isHovering = false"
+  >
+    <div v-show="!isHovering" class="twitch-user">
+      <img 
+        v-if="twitchUser && twitchUser.twitch_pfp"
+        :src="twitchUser.stv_pfp ? twitchUser.stv_pfp : twitchUser.twitch_pfp" 
+        alt="Twitch Profile Picture"
+        class="profile-picture" 
+      />
       <span>{{ twitchUser?.name }}</span>
     </div>
-  </template>
+    <button v-show="isHovering" class="twitch-button sign-out-button" @click="signOut" :disabled="isSigningOut">
+      <img src="/logout.svg" class="icon-size" />
+      <span class="button-text">Sign out</span>
+    </button>
+  </div>
   <template v-else>
     <button class="twitch-button" :class="{ flash: shouldFlash }" @click="signIn">
-      <img src="/Twitch-icon-white.png" style="width: 1.5em; height: 1.5em;" />
+      <img src="/Twitch-icon-white.png" class="icon-size" />
       <span class="button-text">Sign in</span>
     </button>
   </template>
 </template>
 
 <style scoped>
+.icon-size {
+  width: 1.5em;
+  height: 1.5em;
+}
 .twitch-button {
 	width: 100%;
   font-size: 0.88em;
@@ -205,5 +245,20 @@ button:hover {
     background-color: #ff4d4d;
     box-shadow: 0 0 15px #ff4d4d;
   }
+}
+
+.twitch-user-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+}
+
+.sign-out-button {
+  background-color: #c73434;
+}
+
+.sign-out-button:hover {
+  background-color: #e04a4a;
 }
 </style>
