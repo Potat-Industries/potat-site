@@ -72,7 +72,7 @@ const assignUser = async (): Promise<void> => {
   if ([401, 418].includes(data?.statusCode)) {
     console.log('Signing out due to error:', data?.errors?.[0]?.message);
     signOut();
-    return eventBus.$emit('signOut');
+    return;
   }
 
   const userData = data.data[0];
@@ -107,10 +107,6 @@ const handleMessage = (event: MessageEvent) => {
   eventBus.$emit('newToken', {
     token,
     user: JSON.stringify({ id, login, name, stv_id, is_channel }),
-  });
-
-  eventBus.$on('signOut', () => {
-    signOut();
   });
 
   userState.value = JSON.stringify({ id, login, name, stv_id, is_channel });
