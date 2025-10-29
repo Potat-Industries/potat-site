@@ -23,14 +23,23 @@ const isAuthenticated = computed(() => {
   return authToken.value !== null && userState.value !== null;
 });
 
+let loginPopupTimer: ReturnType<typeof setInterval> | undefined;
+
 const signIn = (): void => {
-  window.open(
-		`https://api.${window.location.host}/login`,
-		'_blank',
-		'width=600,height=400'
-	);
+  const loginWindow = window.open(
+    `https://api.${window.location.host}/login`,
+    '_blank',
+    'width=600,height=400'
+  );
 
   window.addEventListener('message', handleMessage);
+
+  loginPopupTimer = setInterval(() => {
+    if (loginWindow && loginWindow.closed) {
+      clearInterval(loginPopupTimer);
+      window.removeEventListener('message', handleMessage);
+    }
+  }, 500);
 };
 
 const signOut = async (): Promise<void> => {
@@ -107,6 +116,9 @@ const handleMessage = (event: MessageEvent) => {
   userState.value = JSON.stringify({ id, login, name, stv_id, is_channel });
   assignUser();
 
+  if (loginPopupTimer) {
+    clearInterval(loginPopupTimer);
+  }
   window.removeEventListener('message', handleMessage);
 };
 
@@ -120,6 +132,12 @@ onMounted((): void => {
   eventBus.$on('userState', (newState: string) => {
     userState.value = newState;
   });
+
+  eventBus.$on('signOut', signOut);
+});
+
+onUnmounted(() => {
+  eventBus.$off('signOut', signOut);
 });
 
 </script>
