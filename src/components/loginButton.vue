@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed, onUnmounted } from 'vue';
-import { default as eventBus } from '../assets/eventBus';
+import eventBus from '../assets/eventBus';
 import computePaintStyle from '../assets/applyPaint';
 import { brightenColor } from '../assets/utilities';
 import { fetchBackend } from '../assets/request';
@@ -17,6 +17,7 @@ const userState: { value: string | null } = reactive({
 const twitchUser = ref<TwitchUser | null>(null);
 const shouldFlash = ref(false);
 const isHovering = ref(false);
+const isSigningOut = ref(false);
 
 const isAuthenticated = computed(() => {
   return authToken.value !== null && userState.value !== null;
@@ -33,11 +34,18 @@ const signIn = (): void => {
 };
 
 const signOut = async (): Promise<void> => {
+  if (isSigningOut.value) return;
+  isSigningOut.value = true;
+
   localStorage.clear();
   authToken.value = null;
   userState.value = null;
   twitchUser.value = null;
   eventBus.$emit('signOut');
+
+  setTimeout(() => {
+    isSigningOut.value = false;
+  }, 1000);
 };
 
 const flashButton = () => {
@@ -132,7 +140,7 @@ onMounted((): void => {
       />
       <span>{{ twitchUser?.name }}</span>
     </div>
-    <button v-show="isHovering" class="twitch-button sign-out-button" @click="signOut">
+    <button v-show="isHovering" class="twitch-button sign-out-button" @click="signOut" :disabled="isSigningOut">
       <img src="/logout.svg" class="icon-size" />
       <span class="button-text">Sign out</span>
     </button>
