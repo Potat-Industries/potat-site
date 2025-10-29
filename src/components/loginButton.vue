@@ -110,7 +110,7 @@ const handleMessage = (event: MessageEvent) => {
   });
 
   userState.value = JSON.stringify({ id, login, name, stv_id, is_channel });
-  assignUser();
+  setTimeout(() => assignUser(), 500);
 
   if (loginPopupTimer) {
     clearInterval(loginPopupTimer);
