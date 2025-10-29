@@ -45,6 +45,7 @@ const signIn = (): void => {
 const signOut = async (): Promise<void> => {
   if (isSigningOut.value) return;
   isSigningOut.value = true;
+  isHovering.value = false;
 
   localStorage.clear();
   authToken.value = null;
