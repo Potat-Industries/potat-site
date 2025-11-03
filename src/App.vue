@@ -121,7 +121,7 @@ watch(route, () => {
 	</ul>
 
 		<div class="temp-bar">
-			<span>Getting your stream in the Halloween spirit? <img src="/pumpkin.png" alt="🎃" class="pumpkin-emoji" /> Try the <router-link to="/help/mergeset">mergeset</router-link> or <router-link to="/help/copyset">copyset</router-link> commands to spookify your emotes!</span>
+			<span>Getting your stream in the holiday spirit? <img src="/tatoSanta.png" alt="🎄" class="holiday-emoji" /> Try the <router-link to="/help/mergeset">mergeset</router-link> or <router-link to="/help/copyset">copyset</router-link> commands to festify your emotes!</span>
 		</div>
 
 		<div class="main-container">
@@ -158,7 +158,7 @@ watch(route, () => {
 	font-size: 0.8em;
 }
 .temp-bar {
-	background-color: rgba(88, 28, 135, 0.8);
+	background-color: rgba(165, 29, 42, 0.8);
 	outline: auto;
 	outline-color: rgba(31, 31, 31, 0.8);
 	padding: 10px;
@@ -171,7 +171,7 @@ watch(route, () => {
 	backdrop-filter: blur(2px);
 }
 
-img.pumpkin-emoji {
+img.holiday-emoji {
 	width: 22px;
 	height: 22px;
 	vertical-align: text-bottom;
