@@ -281,8 +281,17 @@ onMounted(async () => {
 			return res.json();
 		})
 		.then((data) => {
-			const list = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
-			commands.value = list;
+			const extractCommandsList = (payload: unknown): Command[] => {
+				if (payload && typeof payload === 'object' && Array.isArray((payload as any).data)) {
+					return (payload as any).data as Command[];
+				}
+				if (Array.isArray(payload)) {
+					return payload as Command[];
+				}
+				return [] as Command[];
+			};
+
+			commands.value = extractCommandsList(data);
 
 			if (route?.params?.command) {
 				const cmd = commands.value.find(command => command.name === route.params.command)
