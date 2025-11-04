@@ -3,10 +3,8 @@ import { ref, onMounted, reactive, computed, onUnmounted } from 'vue';
 import eventBus from '../assets/eventBus';
 import computePaintStyle from '../assets/applyPaint';
 import { brightenColor } from '../assets/utilities';
-import { fetchBackend } from '../assets/request';
+import { fetchBackend, API_BASE } from '../assets/request';
 import { TwitchUser } from '../types/misc';
-import { API_BASE } from '../assets/request';
-
 const authToken: { value: string | null } = reactive({
 	value: localStorage.getItem('authorization')
 });
