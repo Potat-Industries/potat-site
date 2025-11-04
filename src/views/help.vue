@@ -8,9 +8,14 @@ import { fetchBackend } from '../assets/request';
 const route = useRoute();
 
 const prefix = ref<string>('#');
+const expandedExamples = ref<{ [commandName: string]: boolean }>({});
+const expandedFlagExamples = ref<{ [flagKey: string]: boolean }>({});
+
+const BOT_BADGE_URL = 'https://static-cdn.jtvnw.net/badges/v1/3ffa9565-c35b-4cad-800b-041e60659cf2/2';
+const MODERATOR_BADGE_URL = 'https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/2';
 
 const userState: { value: string | null } = reactive({
-	value: localStorage.getItem('userState')
+	value: localStorage.getItem('userState'),
 });
 
 enum InternalLevels {
@@ -21,21 +26,137 @@ enum InternalLevels {
   'Bot developers',
 };
 
-const collapsed = ref<{
-	[category: string]: boolean;
-}>({});
+const verbs = [
+  'Farting',
+  'Running',
+  'Embellishing',
+  'Procreating',
+  'Invigorating',
+  'Yeeting',
+  'Simmering',
+  'Vibing',
+  'Overthinking',
+  'Underachieving',
+  'Screaming',
+  'Caffeinating',
+  'Moonwalking',
+  'Microwaving',
+  'Rizzing',
+  'Evolving',
+  'Uninstalling',
+  'Downloading',
+  'Uploading',
+  'Rebooting',
+  'Crying',
+  'Dabbing',
+  'Teleporting',
+  'Inflating',
+  'Evaporating',
+  'Vaporizing',
+  'Manifesting',
+  'Rebranding',
+  'Eating',
+  'Vibing',
+  'Gaslighting',
+  'Gatekeeping',
+  'Blinking',
+  'Sneezing',
+];
 
+const nouns = [
+  'Hamburger',
+  'Potato',
+  'Cat',
+  'Dog',
+  'Loser',
+  'Chad',
+  'Goose',
+  'Goblin',
+  'Laptop',
+  'Fridge',
+  'Banana',
+  'Waffle',
+  'Cactus',
+  'Muffin',
+  'Taco',
+  'Wizard',
+  'Karen',
+  'Duck',
+  'Grandma',
+  'Toaster',
+  'Intern',
+  'Microwave',
+  'Raccoon',
+  'Goldfish',
+  'Blobfish',
+  'Toilet',
+  'Pickle',
+  'Sock',
+  'Keyboard',
+  'Giraffe',
+  'NPC',
+  'Goat',
+  'Crab',
+  'Pigeon',
+  'Breadstick',
+  'Frog',
+  'Bagel',
+  'Mushroom',
+  'Pizza',
+  'Sloth',
+  'Turtle',
+  'Donut',
+  'Cupcake',
+  'Hamster',
+  'Platypus',
+];
+
+const getFunnyName = () => {
+	const verb = verbs[Math.floor(Math.random() * verbs.length)];
+	const noun = nouns[Math.floor(Math.random() * nouns.length)];
+	if (Math.random() < 0.5) {
+		const power = Math.pow(10, 1 + Math.floor(Math.random() * 4));
+		const number = String(Math.floor(Math.random() * power));
+
+		return `${verb}${noun}${number}`;
+	}
+	return `${verb}${noun}`;
+};
+
+const twitchStandardColors = [
+  '#0000FF',
+  '#8A2BE2',
+  '#5F9EA0',
+  '#D2691E',
+  '#FF7F50',
+  '#1E90FF',
+  '#B22222',
+  '#DAA520',
+  '#008000',
+  '#FF69B4',
+  '#FF4500',
+  '#FF0000',
+  '#2E8B57',
+  '#00FF7F',
+  '#9ACD32',
+];
+
+const getUserColor = () => {
+	return twitchStandardColors[Math.floor(Math.random() * twitchStandardColors.length)];
+};
+
+const collapsed = ref<{ [category: string]: boolean; }>({});
 const isAllCommands = computed(() => !route.params.command);
-
 const prefCategorySort = [
 	'emotes',
-	'potato',
 	'settings',
 	'stream',
 	'utilities',
+	'potato',
 	'moderation',
 	'spam',
 	'fun',
+	'music',
 	'anime',
 	'development',
 	'deprecated',
@@ -126,6 +247,14 @@ const toggleCollapse = (category: string) => {
 	collapsed.value[category] = !collapsed.value[category];
 };
 
+const toggleExamples = (commandName: string) => {
+	expandedExamples.value[commandName] = !expandedExamples.value[commandName];
+};
+
+const toggleFlagExamples = (flagKey: string) => {
+	expandedFlagExamples.value[flagKey] = !expandedFlagExamples.value[flagKey];
+};
+
 const commandsListContainer = ref<HTMLDivElement>();
 
 const scrollToSelectedCommand = () => {
@@ -146,7 +275,7 @@ const scrollToSelectedCommand = () => {
 }
 
 onMounted(async () => {
-	fetch('https://api.potat.app/help')
+	fetch(`https://api.${window.location.host}/help`)
 		.then(res => res.json())
 		.then((data) => {
 			commands.value = data;
@@ -164,14 +293,14 @@ onMounted(async () => {
 		.catch(console.error);
 
 	if (userState.value) {
-		const username = JSON.parse(userState.value)?.login;
-		if (!username) {
+		const userStoreData = JSON.parse(userState.value);
+		if (!userStoreData?.login) {
 			return;
 		}
 
 		type IAmLazy = { channel: { settings: { prefix: string | string[] } } }
 
-		const userData = await fetchBackend<IAmLazy>(`users/${username}`);
+		const userData = await fetchBackend<IAmLazy>(`users/${userStoreData.login}`);
 		const userPrefix = userData?.data?.[0]?.channel?.settings?.prefix;
 		if (!userPrefix) {
 			return;
@@ -219,6 +348,30 @@ onMounted(async () => {
 						<div v-if="getCommand.usage">
 							<strong>Usage: </strong>{{ getCommand.usage.replace(/^#/g, prefix) }}
 						</div>
+						<div v-if="getCommand.examples?.length" class="examples-section">
+							<hr class="section-divider">
+							<strong>Examples:</strong>
+							<div class="examples-block">
+								<div v-for="(example, index) in (expandedExamples[getCommand.name] ? getCommand.examples : [getCommand.examples[0]])" :key="index" class="example-item">
+									<div v-if="example.description" class="example-description">{{ example.description }}</div>
+									<div class="chat-container">
+										<div v-if="example.trigger || example.input" class="chat-message user-message">
+											<span class="chat-username" :style="{ color: getUserColor() }">{{ getFunnyName() }}:</span>
+											<span class="chat-text">{{ (example.trigger || example.input)?.replace(/^#/g, prefix) }}</span>
+										</div>
+										<div class="chat-message bot-message">
+											<img :src="MODERATOR_BADGE_URL" alt="Moderator" class="chat-badge" />
+											<img :src="BOT_BADGE_URL" alt="Bot" class="chat-badge" />
+											<span class="chat-username">PotatBotat:</span>
+											<span class="chat-text">{{ example.output }}</span>
+										</div>
+									</div>
+								</div>
+								<button v-if="getCommand.examples.length > 1" @click="toggleExamples(getCommand.name)" class="toggle-examples-btn">
+									{{ expandedExamples[getCommand.name] ? 'Show Less' : `Show All ${getCommand.examples.length} Examples` }}
+								</button>
+							</div>
+						</div>
 						<p v-if="checkArray(getCommand.aliases)">
 							<hr class="section-divider">
 							<strong>Aliases: </strong>
@@ -257,22 +410,64 @@ onMounted(async () => {
 								<li v-if="getCommand.conditions.isBlockable === true">Can be Opted-Out From</li>
 							</ul>
 						</p>
-						<p v-if="getCommand.flags?.length">
+						<div v-if="getCommand.flags?.length" class="flags-section">
 							<hr class="section-divider">
-							<strong>Flags: </strong>
-							<div v-for="(flag, index) in getCommand.flags" :key="index" class="flag-details">
-								<p><strong>Name: </strong>{{ flag.name }}</p>
-								<p><strong>Description: </strong>{{ flag.description }}</p>
-								<p><strong>Type:</strong> {{ flag.type }}</p>
-								<p><strong>Availiable to:</strong> {{ InternalLevels[flag.level] }}</p>
-								<p v-if="flag.userRequires">
-									<strong>User requires: :</strong> {{ permissions[flag.userRequires] }}
-								</p>
-								<p v-if="flag.aliases?.length"><strong>Aliases:</strong> {{ flag.aliases.join(', ') }}</p>
-								<p v-if="flag.required"><strong>Required: </strong> {{ flag.required ? 'Yes' : 'No' }}</p>
-								<p v-if="flag.usage"><strong>Usage:</strong> {{ flag.usage.replace(/^#/g, prefix) }}</p>
+							<strong>Flags:</strong>
+							<div class="flags-container">
+								<div v-for="(flag, index) in getCommand.flags" :key="index" class="flag-card">
+									<div class="flag-header">
+										<h4 class="flag-name">--{{ flag.name }}</h4>
+										<span class="flag-type">{{ flag.type }}</span>
+									</div>
+									
+									<div class="flag-content">
+										<p class="flag-description">{{ flag.description }}</p>
+										
+										<div class="flag-metadata">
+											<div class="flag-meta-item">
+												<strong>Available to:</strong> {{ InternalLevels[flag.level] }}
+											</div>
+											<div v-if="flag.userRequires" class="flag-meta-item">
+												<strong>User requires:</strong> {{ permissions[flag.userRequires] }}
+											</div>
+											<div v-if="flag.aliases?.length" class="flag-meta-item">
+												<strong>Aliases:</strong> 
+												<span class="flag-aliases">
+													<span v-for="alias in flag.aliases" :key="alias" class="flag-alias">--{{ alias }}</span>
+												</span>
+											</div>
+											<div v-if="flag.usage" class="flag-meta-item">
+												<strong>Usage:</strong> <code>{{ flag.usage.replace(/^#/g, prefix) }}</code>
+											</div>
+										</div>
+
+										<div v-if="flag.examples?.length" class="flag-examples">
+											<strong>Examples:</strong>
+											<div class="examples-block flag-examples-block">
+												<div v-for="(example, exampleIndex) in (expandedFlagExamples[`${getCommand.name}-${flag.name}`] ? flag.examples : [flag.examples[0]])" :key="exampleIndex" class="example-item">
+													<div v-if="example.description" class="example-description">{{ example.description }}</div>
+													<div class="chat-container">
+														<div v-if="example.trigger || example.input" class="chat-message user-message">
+															<span class="chat-username" :style="{ color: getUserColor() }">{{ getFunnyName() }}:</span>
+															<span class="chat-text">{{ (example.trigger || example.input)?.replace(/^#/g, prefix) }}</span>
+														</div>
+														<div class="chat-message bot-message">
+															<img :src="MODERATOR_BADGE_URL" alt="Moderator" class="chat-badge" />
+															<img :src="BOT_BADGE_URL" alt="Bot" class="chat-badge" />
+															<span class="chat-username">PotatBotat:</span>
+															<span class="chat-text">{{ example.output }}</span>
+														</div>
+													</div>
+												</div>
+												<button v-if="flag.examples.length > 1" @click="toggleFlagExamples(`${getCommand.name}-${flag.name}`)" class="toggle-examples-btn">
+													{{ expandedFlagExamples[`${getCommand.name}-${flag.name}`] ? 'Show Less' : `Show All ${flag.examples.length} Examples` }}
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
-						</p>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -322,6 +517,123 @@ onMounted(async () => {
   background-color: #1e1c1c79;
   outline: auto -webkit-focus-ring-color;
   outline-color: #f4f4f4;
+}
+
+.flags-section {
+  margin-top: 1rem;
+}
+
+.flags-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.flag-card {
+  background-color: #2a2a2a;
+  border-left: 4px solid #ae81ff;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #f9fafb;
+}
+
+.flag-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
+}
+
+.flag-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ae81ff;
+  margin: 0;
+  font-family: 'Fira Code', monospace;
+}
+
+.flag-type {
+  background-color: #3a3a3a;
+  color: #ffd700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.flag-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.flag-description {
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  color: #e0e0e0;
+}
+
+.flag-metadata {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.flag-meta-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.flag-meta-item strong {
+  color: #b0b0b0;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.flag-aliases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.flag-alias {
+  background-color: #1a1a1a;
+  color: #ae81ff;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: 'Fira Code', monospace;
+}
+
+.flag-examples {
+  margin-top: 0.5rem;
+}
+
+.flag-examples-block {
+  margin-top: 0.5rem;
+  background-color: #1e1e1e;
+  border-left: 3px solid #666;
+}
+
+.flag-examples strong {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+}
+
+code {
+  background-color: #1a1a1a;
+  color: #ae81ff;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9em;
 }
 .command-prefix {
 	color: #666666;
@@ -435,6 +747,95 @@ onMounted(async () => {
   margin: 1rem 0;
 }
 
+.examples-section {
+  margin-top: 1rem;
+}
+
+.examples-block {
+  background-color: #2a2a2a;
+  border-left: 4px solid #ae81ff;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  border-radius: 6px;
+  color: #f9fafb;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.example-item {
+  margin-bottom: 1rem;
+}
+
+.example-item:last-of-type {
+  margin-bottom: 0;
+}
+
+.example-description {
+  font-style: italic;
+  color: #b0b0b0;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.chat-container {
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-family: 'Roobert', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.chat-message {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+  word-wrap: break-word;
+}
+
+.chat-message:last-child {
+  margin-bottom: 0;
+}
+
+.chat-username {
+  font-weight: 600;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.chat-badge {
+  height: 1.1em;
+  width: auto;
+  margin-right: 0.25rem;
+  margin-top: 0.1em;
+  flex-shrink: 0;
+}
+
+.bot-message .chat-username {
+  color: #ae81ff;
+}
+
+.chat-text {
+  color: #ffffff;
+  word-break: break-word;
+}
+
+.toggle-examples-btn {
+  margin-top: 0.75rem;
+  background-color: #3a3a3a;
+  color: #ae81ff;
+  border: 1px solid #ae81ff;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.toggle-examples-btn:hover {
+  background-color: #4a4a4a;
+}
+
 .section-header {
   font-size: 1.1rem;
   font-weight: 600;
@@ -497,6 +898,39 @@ button.active {
 	}
 	#help-content {
 		padding-top: 20px;
+	}
+	.chat-container {
+		font-size: 0.85rem;
+		padding: 0.5rem;
+	}
+	.chat-username {
+		margin-right: 0.25rem;
+	}
+	.chat-badge {
+		margin-right: 0.15rem;
+	}
+	.toggle-examples-btn {
+		font-size: 0.8rem;
+		padding: 0.4rem 0.8rem;
+	}
+	.flag-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.5rem;
+	}
+	.flag-name {
+		font-size: 1rem;
+	}
+	.flag-metadata {
+		font-size: 0.85rem;
+	}
+	.flag-meta-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.25rem;
+	}
+	.flag-meta-item strong {
+		min-width: auto;
 	}
 }
 </style>

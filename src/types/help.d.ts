@@ -30,6 +30,13 @@ export type CommandConditions = {
   superuser?: boolean;
 };
 
+export interface Example {
+  description?: string;
+  trigger?: string;
+  input?: string;
+  output: string;
+}
+
 export type FlagDetails = {
   name: string;
   type: 'boolean' | 'string';
@@ -39,6 +46,7 @@ export type FlagDetails = {
   description: string;
   usage?: string;
   aliases?: string[];
+  examples: Example[];
 };
 
 export interface KeyString {
@@ -59,4 +67,5 @@ export interface Command {
   botRequires: BotCommandRequirements;
   userRequires: UserRequires;
   conditions: CommandConditions;
+  examples: Example[];
 }

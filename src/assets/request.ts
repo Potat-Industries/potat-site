@@ -43,8 +43,6 @@ export async function makeRequest<T = unknown>(
     };
   }
 
-  console.log(options);
-
   const response = await fetch(url, options);
   return parseResponse<T>(response);
 }
