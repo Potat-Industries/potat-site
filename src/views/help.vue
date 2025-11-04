@@ -4,7 +4,7 @@ import { humanizeDuration } from '../assets/utilities';
 import { Command, KeyString } from '../types/help';
 import router from '../router';
 import { useRoute } from 'vue-router';
-import { fetchBackend } from '../assets/request';
+import { fetchBackend, API_BASE } from '../assets/request';
 const route = useRoute();
 
 const prefix = ref<string>('#');
@@ -275,10 +275,14 @@ const scrollToSelectedCommand = () => {
 }
 
 onMounted(async () => {
-	fetch(`https://api.${window.location.host}/help`)
-		.then(res => res.json())
+	fetch(`${API_BASE}/help`, { cache: 'no-store' })
+		.then(async (res) => {
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			return res.json();
+		})
 		.then((data) => {
-			commands.value = data;
+			const list = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+			commands.value = list;
 
 			if (route?.params?.command) {
 				const cmd = commands.value.find(command => command.name === route.params.command)
@@ -290,7 +294,9 @@ onMounted(async () => {
 				}
 			}
 		})
-		.catch(console.error);
+		.catch((err) => {
+			console.error('[help] fetch error', err);
+		});
 
 	if (userState.value) {
 		const userStoreData = JSON.parse(userState.value);

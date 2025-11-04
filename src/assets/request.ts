@@ -2,6 +2,8 @@
 // eslint-disable-next-line import/extensions
 import { ExtendedOptions, GenericResponse, ParsedRes } from '../types/request';
 
+export const API_BASE = import.meta.env.VITE_API_BASE ?? 'https://api.potat.app';
+
 async function parseResponse<T>(res: Response): Promise<ParsedRes<T>> {
   const blob = await res.blob();
 
@@ -51,12 +53,15 @@ export async function fetchBackend<T = unknown>(
   url: string,
   options?: ExtendedOptions,
 ): Promise<ParsedRes<GenericResponse<T>>> {
+  const base = API_BASE.replace(/\/+$/, '');
+  const path = url.replace(/^\/+/, '');
   const result = await makeRequest<GenericResponse<T>>(
-    `https://api.potat.app/${url}`,
+    `${base}/${path}`,
     options,
   );
 
   if (result.errors?.length) {
+    // eslint-disable-next-line no-console
     console.error(result.errors);
   }
 

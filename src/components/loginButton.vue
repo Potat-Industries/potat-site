@@ -5,6 +5,7 @@ import computePaintStyle from '../assets/applyPaint';
 import { brightenColor } from '../assets/utilities';
 import { fetchBackend } from '../assets/request';
 import { TwitchUser } from '../types/misc';
+import { API_BASE } from '../assets/request';
 
 const authToken: { value: string | null } = reactive({
 	value: localStorage.getItem('authorization')
@@ -27,7 +28,7 @@ let loginPopupTimer: ReturnType<typeof setInterval> | undefined;
 
 const signIn = (): void => {
   const loginWindow = window.open(
-    `https://api.${window.location.host}/login`,
+    `${API_BASE}/login`,
     '_blank',
     'width=600,height=400'
   );
