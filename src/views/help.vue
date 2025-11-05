@@ -754,15 +754,13 @@ code {
 	transition: all 0.15s ease;
   user-select: none;
 }
-.command-item a {
-  user-select: none;
-}
 .command-item:hover {
   background: rgba(60, 60, 60, 0.4);
   transform: translateX(2px);
 }
 .command-item a {
-  transition: color 0.15s ease;
+	user-select: none;
+	transition: color 0.15s ease;
 }
 .command-item a.active {
 	color: #ae81ff;
@@ -902,8 +900,12 @@ code {
 .toggle-examples-btn:focus,
 .toggle-examples-btn:focus-visible {
 	outline: none;
-	box-shadow: none;
 	border-color: rgba(255, 255, 255, 0.15);
+}
+
+.toggle-examples-btn:focus-visible {
+	border-color: #ae81ff;
+	box-shadow: 0 0 0 2px rgba(174, 129, 255, 0.35);
 }
 
 .section-header {
