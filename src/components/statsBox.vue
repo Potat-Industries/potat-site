@@ -77,7 +77,7 @@ onMounted(async () => {
 	grid-template: auto / auto auto;
 	gap: 8px;
 	text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
-	background: linear-gradient(135deg, rgba(42, 42, 42, var(--panel-a1)) 0%, rgba(31, 31, 31, var(--panel-a2)) 100%);
+	background: var(--panel-bg);
 	border-radius: 15px;
 	padding: 20px;
 	backdrop-filter: blur(var(--panel-blur));

@@ -58,7 +58,7 @@ import TwitchStream from '../components/twitchStream.vue';
 }
 
 .title-box {
-	background: linear-gradient(135deg, rgba(42, 42, 42, var(--panel-a1)) 0%, rgba(31, 31, 31, var(--panel-a2)) 100%);
+	background: var(--panel-bg);
 	border-radius: 15px;
 	padding: 15px;
 	backdrop-filter: blur(var(--panel-blur));
