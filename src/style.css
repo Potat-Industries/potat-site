@@ -13,6 +13,29 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --panel-a1: 0.85;
+  --panel-a2: 0.95;
+  --panel-blur: 14px;
+  --panel-border: rgba(255, 255, 255, 0.05);
+  --panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.30);
+  --panel-bg: linear-gradient(135deg, rgba(42, 42, 42, var(--panel-a1)) 0%, rgba(31, 31, 31, var(--panel-a2)) 100%);
+  --panel-sub-a1: 0.65;
+  --panel-sub-a2: 0.80;
+  --panel-sub-blur: 10px;
+
+}
+
+@media (color-gamut: p3) {
+  :root {
+    --panel-a1: 0.92;
+    --panel-a2: 0.98;
+    --panel-blur: 10px;
+    --panel-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+    --panel-sub-a1: 0.72;
+    --panel-sub-a2: 0.86;
+    --panel-sub-blur: 8px;
+  }
 }
 
 * {

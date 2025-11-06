@@ -218,10 +218,13 @@ onMounted(async () => {
 
 <style scoped>
 .button-box {
-  background-color: rgba(31, 31, 31, 0.8);
-  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(42, 42, 42, var(--panel-a1)) 0%, rgba(31, 31, 31, var(--panel-a2)) 100%);
+  border-radius: 15px;
   padding: 15px;
   margin: 20px;
+  backdrop-filter: blur(var(--panel-blur));
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
 }
 
 .part-button,
