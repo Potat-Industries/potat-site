@@ -441,7 +441,7 @@ onMounted(async () => {
 							<div class="flags-container">
 								<div v-for="(flag, index) in getCommand.flags" :key="index" class="flag-card">
 									<div class="flag-header">
-										<h4 class="flag-name">--{{ flag.name }}</h4>
+										<h4 class="flag-name">{{ flag.name }}</h4>
 										<span class="flag-type">{{ flag.type }}</span>
 									</div>
 									
