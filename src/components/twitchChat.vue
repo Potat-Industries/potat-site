@@ -17,17 +17,21 @@ const host = ref(window.location.hostname);
 </template>
 
 <style scoped>
-  .twitch-iframe {
-    background-color: rgba(31, 31, 31, 0.8);
-    border-radius: 15px;
-    padding: 15px;
-  }
+	.twitch-iframe {
+		background: var(--panel-bg);
+		border-radius: 15px;
+		padding: 15px;
+		backdrop-filter: blur(var(--panel-blur));
+		border: 1px solid var(--panel-border);
+		box-shadow: var(--panel-shadow);
+	}
 	.twitch-iframe h2 {
 		text-align: center;
 	}
-  iframe#twitch-chat-embed {
-    display: flex;
-    border: none;
+	iframe#twitch-chat-embed {
+		display: flex;
+		border: none;
 		border-radius: 7.5px;
+		height: clamp(360px, 60vh, 550px);
 	}
 </style>

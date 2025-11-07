@@ -76,10 +76,13 @@ onMounted(async () => {
 	display: grid;
 	grid-template: auto / auto auto;
 	gap: 8px;
-  text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
-  background-color: rgba(31, 31, 31, 0.8);
-  border-radius: 15px;
-  padding: 20px;
+	text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
+	background: var(--panel-bg);
+	border-radius: 15px;
+	padding: 20px;
+	backdrop-filter: blur(var(--panel-blur));
+	border: 1px solid var(--panel-border);
+	box-shadow: var(--panel-shadow);
 	font-variant-numeric: tabular-nums;
 	strong {
 		min-width: 160px;
