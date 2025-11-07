@@ -9,7 +9,7 @@ const host = ref(window.location.hostname);
 		<h2>Ask for help, or try it out!</h2>
 
 		<iframe id="twitch-chat-embed"
-	    :src="`https://www.twitch.tv/embed/potatbotat/chat?parent=${host}&darkpopout`"
+			:src="`https://www.twitch.tv/embed/potatbotat/chat?parent=${host}&darkpopout`"
 			loading="lazy"
 			height="550"
 			width="100%"

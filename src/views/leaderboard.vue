@@ -467,9 +467,6 @@ onUnmounted(() => {
 
 
 <style scoped>
-.leaderboard-item {
-  padding: 8px;
-}
 .leaderboard-options {
   display: flex;
   gap: 10px;
@@ -506,7 +503,7 @@ onUnmounted(() => {
 }
 
 .leaderboard-item {
-  padding: 10px;
+  padding: 8px;
   border-radius: 15px;
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.10)), var(--panel-bg);
   border: 1px solid var(--panel-border);
@@ -564,7 +561,7 @@ onUnmounted(() => {
   width: 64px;
   height: 64px;
   margin-right: 10px;
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .color-bar {
@@ -576,10 +573,10 @@ onUnmounted(() => {
 
 .paint-span {
   font-size: 2.4rem;
-  width: 300;
+  width: 300px;
   height: 64px;
   margin-right: 10px;
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .loading-indicator {
