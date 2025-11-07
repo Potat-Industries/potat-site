@@ -222,9 +222,11 @@ onMounted(async () => {
   border-radius: 15px;
   padding: 15px;
   margin: 20px;
-  backdrop-filter: blur(var(--panel-blur));
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
+  contain: paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 140px;
 }
 
 .part-button,
