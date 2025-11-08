@@ -467,19 +467,19 @@ onUnmounted(() => {
 
 
 <style scoped>
-.leaderboard {
-	padding: 5px;
-}
 .leaderboard-options {
   display: flex;
   gap: 10px;
   position: sticky;
   top: 75px;
-	height: 75px;
+  margin-bottom: 6px;
   z-index: 1;
-  background-color: rgba(30, 25, 37, 0.94);
+  background: var(--panel-bg);
   padding: 10px;
-  border-radius: 0.5rem;
+  border-radius: 15px;
+  backdrop-filter: blur(var(--panel-blur));
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
 }
 
 .type-box {
@@ -494,21 +494,30 @@ onUnmounted(() => {
 
 .leaderboard-list {
   list-style: none;
-  padding: 0;
+  padding: 10px;
   text-align: left;
-  color: #e5e4e4;
-	margin: 0;
-	padding: 10px;
+  position: relative;
+  isolation: isolate;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .leaderboard-item {
-  padding: 3px;
-  border-radius: 0.5rem;
-  background-color: rgba(31, 31, 31, 0.94);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 15px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.10), rgba(0, 0, 0, 0.10)), var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  background-clip: padding-box;
+  contain: paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 120px;
+  position: relative;
+  z-index: 1;
 }
 
 .leaderboard-item .text-content img {
@@ -525,8 +534,8 @@ onUnmounted(() => {
 .profile-picture img {
   border-radius: 50%;
   margin-right: 5px;
-  width: 80px;
-  height: 80px;
+  width: 72px;
+  height: 72px;
   vertical-align: cover;
 }
 
@@ -536,7 +545,7 @@ onUnmounted(() => {
 }
 
 .rank-name {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .leaderboard-list::-webkit-scrollbar {
@@ -549,25 +558,25 @@ onUnmounted(() => {
 }
 
 .badge-picture img {
-  width: 80px;
-  height: 80px;
+  width: 64px;
+  height: 64px;
   margin-right: 10px;
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .color-bar {
-  width: 200px;
-  height: 80px;
+  width: 160px;
+  height: 64px;
   border-radius: 4px;
   margin-right: 10px;
 }
 
 .paint-span {
-  font-size: 3rem;
-  width: 300;
-  height: 80px;
+  font-size: 2.4rem;
+  width: 300px;
+  height: 64px;
   margin-right: 10px;
-  margin-left: 10px
+  margin-left: 10px;
 }
 
 .loading-indicator {

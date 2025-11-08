@@ -80,10 +80,12 @@ onMounted(async () => {
 	background: var(--panel-bg);
 	border-radius: 15px;
 	padding: 20px;
-	backdrop-filter: blur(var(--panel-blur));
 	border: 1px solid var(--panel-border);
 	box-shadow: var(--panel-shadow);
 	font-variant-numeric: tabular-nums;
+	contain: paint;
+	content-visibility: auto;
+	contain-intrinsic-size: 120px;
 	strong {
 		min-width: 160px;
 		margin-right: 10px;
