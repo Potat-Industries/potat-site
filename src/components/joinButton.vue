@@ -204,7 +204,7 @@ onMounted(async () => {
           aria-label="Show setup / next steps"
           @click.stop="eventBus.$emit('join-success-popup')"
         >
-          <svg class="info-icon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <svg class="info-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
             <line x1="12" y1="10" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             <circle cx="12" cy="7" r="1.5" fill="currentColor" />
@@ -287,7 +287,7 @@ onMounted(async () => {
   transition: background-color .15s ease;
 }
 
-.info-icon { display: block; shape-rendering: geometricPrecision; width: 18px; height: 18px; }
+.info-icon { display: block; shape-rendering: geometricPrecision; width: 20px; height: 20px; }
 
 .info-button:hover { background-color: rgba(255,255,255,0.07); }
 
