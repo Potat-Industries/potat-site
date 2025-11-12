@@ -189,13 +189,28 @@ onMounted(async () => {
 <template>
   <div class="button-box">
     <template v-if="isAuthenticated && isChannel">
-      <button
-        class="part-button"
-        type="button"
-        @click="part"
-        :disabled="isOperationInProgress"
-        :class="{ 'cooldown': isOperationInProgress }"
-      >Part</button>
+      <div class="part-with-info">
+        <button
+          class="part-button"
+          type="button"
+          @click="part"
+          :disabled="isOperationInProgress"
+          :class="{ 'cooldown': isOperationInProgress }"
+        >Part</button>
+        <button
+          class="info-button"
+          type="button"
+          title="Show setup / next steps"
+          aria-label="Show setup / next steps"
+          @click.stop="eventBus.$emit('join-success-popup')"
+        >
+          <svg class="info-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+            <line x1="12" y1="10" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <circle cx="12" cy="7" r="1.5" fill="currentColor" />
+          </svg>
+        </button>
+      </div>
     </template>
     <template v-else-if="isAuthenticated">
       <button
@@ -242,6 +257,43 @@ onMounted(async () => {
   text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
 	font-size: 22px;
 	min-width: 80%;
+}
+
+.part-with-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.info-button {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  cursor: pointer;
+  transition: background-color .15s ease;
+}
+
+.info-icon { display: block; shape-rendering: geometricPrecision; width: 20px; height: 20px; }
+
+.info-button:hover { background-color: rgba(255,255,255,0.07); }
+
+.info-button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .join-button {
