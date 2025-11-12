@@ -11,8 +11,6 @@ const host = ref(window.location.hostname);
 		<iframe id="twitch-chat-embed"
 			:src="`https://www.twitch.tv/embed/potatbotat/chat?parent=${host}&darkpopout`"
 			loading="lazy"
-			height="550"
-			width="100%"
 		></iframe>
 	</div>
 </template>
@@ -24,17 +22,20 @@ const host = ref(window.location.hostname);
 		padding: 15px;
 		border: 1px solid var(--panel-border);
 		box-shadow: var(--panel-shadow);
-		contain: paint;
-		content-visibility: auto;
-		contain-intrinsic-size: 420px;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
 	}
 	.twitch-iframe h2 {
 		text-align: center;
+		margin: 0 0 8px 0;
 	}
 	iframe#twitch-chat-embed {
-		display: flex;
+		display: block;
+		width: 100%;
 		border: none;
 		border-radius: 7.5px;
-		height: clamp(360px, 60vh, 550px);
+		flex: 1 1 auto;
+		min-height: 0;
 	}
 </style>
