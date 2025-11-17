@@ -458,7 +458,7 @@ onMounted(async () => {
 											<div v-if="flag.aliases?.length" class="flag-meta-item">
 												<strong>Aliases:</strong> 
 												<span class="flag-aliases">
-													<span v-for="alias in flag.aliases" :key="alias" class="flag-alias">--{{ alias }}</span>
+													<span v-for="alias in flag.aliases" :key="alias" class="flag-alias">{{ alias }}</span>
 												</span>
 											</div>
 											<div v-if="flag.usage" class="flag-meta-item">
