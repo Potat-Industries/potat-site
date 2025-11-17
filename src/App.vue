@@ -156,6 +156,7 @@ watch(route, () => {
   z-index: 10;
   user-select: none;
 	font-size: 0.8em;
+	backdrop-filter: blur(2px);
 }
 .temp-bar {
 	background-color: rgba(165, 29, 42, 0.8);
