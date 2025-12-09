@@ -13,8 +13,6 @@ const dismissed = ref(false);
 
 const greetingName = computed(() => props.username || 'Friend');
 
-const heroSrc = '/potat-banner-asset.png';
-
 const phrases = [
   'you crushed it!',
   'you killed it!',
@@ -38,7 +36,7 @@ const pickRandomPhrase = () => {
   return phrases[idx];
 };
 
-const ending = ref(pickRandomPhrase());
+const ending = ref('');
 
 const onDismiss = () => {
   dismissed.value = true;
@@ -68,16 +66,16 @@ onMounted(() => {
       <img class="banner-flare" src="/banner-flare.png" alt="" aria-hidden="true" />
       <img class="banner-assets" src="/banner-asset.png" alt="" aria-hidden="true" />
       <div class="actions">
-      <router-link :to="recapPath" class="cta">
+      <RouterLink :to="recapPath" class="cta">
         See Your Recap
         <span class="arrow" aria-hidden="true">↗</span>
-      </router-link>
+      </RouterLink>
       <button class="dismiss" aria-label="Dismiss banner" @click="onDismiss">×</button>
       </div>
     </div>
   </div>
   <div v-else class="wrapped-banner-spacer" />
-  
+
 </template>
 
 <style scoped>
@@ -200,8 +198,7 @@ onMounted(() => {
 
 .cta:hover { filter: brightness(0.95); }
 
-.arrow { line-height: 1; font-size: 13px; }
-.arrow { font-size: 12px; }
+.arrow { line-height: 1; font-size: 12px; }
 
 .dismiss {
   background: transparent;
@@ -225,6 +222,5 @@ onMounted(() => {
 @media (max-width: 640px) {
   .message { white-space: normal; }
   .cta { padding: 5px 8px; min-width: 104px; font-size: 12px; }
-  .banner-assets { right: 135px; height: 72px; bottom: -4px; top: auto; transform: none; }
 }
 </style>
