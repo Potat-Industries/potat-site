@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref, computed, nextTick } from 'vue';
 import { brightenColor } from '../assets/utilities';
 import { fetchBackend } from '../assets/request';
 import { useRoute } from 'vue-router';
@@ -51,6 +51,11 @@ type UserBadgeOwnedStat = {
   user_color: string;
   bestName: string;
   owned_badges: number;
+  badge_urls?: string[];
+  active_badge_url?: string;
+  owned_badge_ids?: string[];
+  badges?: string[];
+  badge_ids?: string[];
 } & Stat;
 
 type BadgeOwnersStat = BadgeStat & {
@@ -78,6 +83,40 @@ type StvBadgeStat = {
   id: string;
   owners: number;
 } & Stat;
+
+interface ModalBadge {
+  id: string;
+  url: string;
+  isChannel: boolean;
+}
+
+ // Channel badges
+const channelBadgeData = [
+  { id: 'plaqueboymax-mixtape', url: 'https://static-cdn.jtvnw.net/badges/v1/840b5e9d-c427-47a7-9568-2aef6fee73db/3' },
+  { id: 'kc-subathon-2024', url: 'https://static-cdn.jtvnw.net/badges/v1/364e8b1e-b153-4653-930a-b7feee3ccb85/3' },
+  { id: 'mafiathon-3-badge', url: 'https://static-cdn.jtvnw.net/badges/v1/a5918f14-9946-4e49-858f-2af63a887d67/3' },
+  { id: 'speed-does-america', url: 'https://static-cdn.jtvnw.net/badges/v1/12af31c1-b6ee-4739-9703-66d1ed4d4af8/3' },
+  { id: 'ariatopia', url: 'https://static-cdn.jtvnw.net/badges/v1/515929ec-0ed5-42d8-aa90-4cf78a5b5396/3' },
+  // GUIDs
+  { id: '840b5e9d-c427-47a7-9568-2aef6fee73db' },
+  { id: '364e8b1e-b153-4653-930a-b7feee3ccb85' },
+  { id: 'a5918f14-9946-4e49-858f-2af63a887d67' },
+  { id: '12af31c1-b6ee-4739-9703-66d1ed4d4af8' },
+  { id: '515929ec-0ed5-42d8-aa90-4cf78a5b5396' }
+];
+
+const channelBadges = new Set(channelBadgeData.map(b => b.id.toLowerCase()));
+const specialChannelBadgeUrl: Record<string, string> = Object.fromEntries(
+  channelBadgeData.filter(b => b.url).map(b => [b.id, b.url!])
+);
+
+const getChannelBadgeCount = (user: UserBadgeOwnedStat): number => {
+  const ids = user.owned_badge_ids || user.badges || user.badge_ids;
+  if (!ids || !Array.isArray(ids)) {
+    return 0;
+  }
+  return ids.filter((id) => typeof id === 'string' && channelBadges.has(id.toLowerCase())).length;
+}
 
 const LeaderboardTypes = [
   'twitchownedbadges',
@@ -126,6 +165,14 @@ stvBadgeStats = ref<StvBadgeStat[]>([]),
 map = new Map(),
 loading = ref(false),
 scrollTimeout = ref<number | undefined>(undefined),
+failedBadgeUrls = ref<Set<string>>(new Set()),
+showBadgeModal = ref(false),
+previousActiveElement = ref<HTMLElement | null>(null),
+modalUser = ref<UserBadgeOwnedStat | null>(null),
+modalLoading = ref(false),
+ownersMapRef = ref<Map<string, BadgeOwnersStat>>(new Map()),
+activeBadgeTab = ref<'all' | 'channel'>('all'),
+modalBadges = ref<ModalBadge[]>([]),
 
 fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => {
 	if (loading.value) {
@@ -141,8 +188,7 @@ fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => 
       }).then(res => res?.data?.map(b => {
         if (b.badge === 'NOBADGE') return;
         if (!b.url) return b;
-        const lastSlashIndex = b.url.lastIndexOf("/");
-        b.url = b.url.substring(0, lastSlashIndex + 1) + "3";
+        b.url = normalizeSize3(b.url);
         b.rank = b.rank -1;
         return b;
       }).filter(Boolean)as BadgeStat[]);
@@ -158,15 +204,40 @@ fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => 
       const response = await fetchBackend<UserBadgeOwnedStat>(`twitch/badges`, {
         params: { first: 100, owned: true, after: last }
       });
+      const users = response?.data ?? [];
 
-      ownedBadgeUserStats.value = response?.data ?? [];
+      const ownersRes = await fetchBackend<BadgeOwnersStat>(`twitch/badges`, {
+        params: { first: 100, owners: true }
+      }).then(res => res?.data?.map(b => {
+        b.url = normalizeSize3(b.url);
+        return b;
+      }).filter(Boolean) as BadgeOwnersStat[]);
+
+      const ownersMap = new Map<string, BadgeOwnersStat>();
+      for (const o of ownersRes ?? []) {
+        ownersMap.set(o.badge, o);
+      }
+      ownersMapRef.value = ownersMap;
+      // preview by users rarest badges
+      for (const u of users) {
+        let o = ownersMap.get(u.badge);
+        if (!o) {
+          // fallback: try matching by name or case-insensitive badge key
+          o = ownersRes.find(b => b.badge?.toLowerCase?.() === u.badge?.toLowerCase?.())
+            || ownersRes.find(b => b.name?.toLowerCase?.() === u.badge?.toLowerCase?.());
+        }
+        if (o?.url) {
+          u.active_badge_url = o.url;
+        }
+      }
+
+      ownedBadgeUserStats.value = users;
     } else if (type === 'twitchbadgeowners') {
       const response = await fetchBackend<BadgeOwnersStat>(`twitch/badges`, {
         params: { first: 100, owners: true, after: last }
       }).then(res => res?.data?.map(b => {
         const lastSlashIndex = b.url?.lastIndexOf("/");
-        b.url = b.url?.substring(0, (lastSlashIndex ?? 0) + 1) + "3";
-
+        b.url = normalizeSize3(b.url)
         return b;
       }).filter(Boolean)as BadgeOwnersStat[]);
 
@@ -275,6 +346,140 @@ getLocale = (value: string | undefined): string => {
   return parseInt(value as string).toLocaleString();
 }
 
+const handleImgError = (url: string) => {
+  failedBadgeUrls.value.add(url);
+}
+
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    closeBadgeModal();
+    return;
+  }
+
+  if (e.key === 'Tab' && showBadgeModal.value) {
+    const modal = document.querySelector('.badge-modal');
+    if (!modal) return;
+
+    const focusableElements = modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstElement) {
+        lastElement.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        firstElement.focus();
+        e.preventDefault();
+      }
+    }
+  }
+}
+
+const closeBadgeModal = () => {
+  showBadgeModal.value = false;
+  modalUser.value = null;
+  document.body.style.overflow = '';
+  window.removeEventListener('keydown', handleKeydown);
+  previousActiveElement.value?.focus();
+}
+
+const openBadgeModal = (user: UserBadgeOwnedStat) => {
+  previousActiveElement.value = document.activeElement as HTMLElement;
+  modalUser.value = user;
+  showBadgeModal.value = true;
+  activeBadgeTab.value = 'all';
+  failedBadgeUrls.value.clear();
+  document.body.style.overflow = 'hidden';
+  window.addEventListener('keydown', handleKeydown);
+  
+  nextTick(() => {
+    const closeBtn = document.querySelector('.badge-modal .close-btn') as HTMLElement;
+    closeBtn?.focus();
+  });
+
+  loadUserBadges(user).catch(() => {});
+}
+
+const normalizeSize3 = (url?: string): string | undefined => {
+  if (!url) return undefined;
+  const lastSlashIndex = url.lastIndexOf('/');
+  if (lastSlashIndex === -1 || lastSlashIndex === url.length - 1) {
+    return url;
+  }
+  return url.substring(0, lastSlashIndex + 1) + '3';
+}
+
+const loadUserBadges = async (user: UserBadgeOwnedStat) => {
+  if (!user?.bestName) return;
+  try {
+    modalLoading.value = true;
+    modalBadges.value = [];
+    
+    const ids = user.owned_badge_ids || user.badges || user.badge_ids || [];
+    
+    if (Array.isArray(ids) && ids.length > 0) {
+      const mappedBadges: ModalBadge[] = [];
+      for (const id of ids) {
+        if (typeof id !== 'string') continue;
+        const lowerId = id.toLowerCase();
+        const ownerStat = ownersMapRef.value.get(id) || ownersMapRef.value.get(lowerId);
+        
+        let url = ownerStat?.url;
+        
+        if (!url) {
+           url = specialChannelBadgeUrl[id] || specialChannelBadgeUrl[lowerId];
+        }
+        
+        // fallback for GUIDs
+        if (!url && channelBadges.has(lowerId)) {
+           // check if it looks like a GUID
+           if (lowerId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)) {
+             url = `https://static-cdn.jtvnw.net/badges/v1/${lowerId}/3`;
+           }
+        }
+
+        const normalizedUrl = normalizeSize3(url);
+        if (normalizedUrl) {
+            mappedBadges.push({
+                id: id,
+                url: normalizedUrl,
+                isChannel: channelBadges.has(lowerId)
+            });
+        }
+      }
+      modalBadges.value = mappedBadges;
+    } else {
+      const ownersImages = Array.from(ownersMapRef.value.values())
+        .map(o => normalizeSize3(o.url))
+        .filter((u: string | undefined): u is string => Boolean(u));
+
+      const total = Number(user.owned_badges ?? 0);
+      const urls: string[] | undefined = ownersImages.slice(0, Math.max(0, total));
+
+      if (urls && urls.length) {
+        modalBadges.value = urls.map((url, i) => ({ id: `unknown-${i}`, url, isChannel: false }));
+      }
+    }
+  } finally {
+    modalLoading.value = false;
+  }
+}
+
+const filteredModalBadges = computed(() => {
+  if (activeBadgeTab.value === 'channel') {
+    return modalBadges.value.filter(b => b.isChannel);
+  }
+  return modalBadges.value;
+});
+
 onMounted(() => {
   fetchLeaderboard(type.value, undefined);
 
@@ -283,6 +488,7 @@ onMounted(() => {
 
 onUnmounted(() => {
 	removeEventListener('scroll', handleScroll);
+  window.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
@@ -361,22 +567,93 @@ onUnmounted(() => {
     </ul>
 
     <ul v-if="ownedBadgeUserStats.length && type === 'twitchownedbadges'" class="leaderboard-list">
-      <li v-for="badge in ownedBadgeUserStats" :key="badge.bestName" class="leaderboard-item">
+        <li v-for="badge in ownedBadgeUserStats" :key="badge.bestName" class="leaderboard-item">
         <div class="profile-picture">
           <a :href="`https://twitch.tv/${badge.bestName?.toLowerCase()}`" target="_blank">
             <img :src="badge.user_pfp ?? 'https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-600x600.png'"/>
           </a>
         </div>
-        <div class="text-content">
+          <div class="text-content">
           <div class="rank-name">
             <a :href="`https://twitch.tv/${badge.bestName?.toLowerCase()}`" target="_blank">
               <strong :style="{ color: brightenColor(badge.user_color) }">{{ badge.bestName }}</strong>
             </a>
           </div>
-          <span>Owned Badges: {{ Number(badge.owned_badges)?.toLocaleString() }}</span>
-        </div>
+          <div class="owned-badges-row">
+            <span>Owned Badges: {{ Number(badge.owned_badges)?.toLocaleString() }}</span>
+            <span 
+              v-if="getChannelBadgeCount(badge) > 0" 
+              class="channel-badge-count" 
+              data-tooltip="Channel badges"
+            >
+              +{{ getChannelBadgeCount(badge) }}
+            </span>
+          </div>
+          </div>
+          <div class="badges-preview">
+            <button
+              v-if="(badge.owned_badges ?? 0) > 0"
+              class="toggle-badges"
+              @click="openBadgeModal(badge)"
+              :title="'View all badges'"
+            >
+              View all
+            </button>
+          </div>
       </li>
     </ul>
+
+      <div 
+        v-if="showBadgeModal" 
+        class="badge-modal" 
+        @click.self="closeBadgeModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="badge-modal-header"
+      >
+        <div class="badge-modal-content">
+          <div class="badge-modal-header" id="badge-modal-header">
+            <strong>{{ modalUser?.bestName }}'s Badges</strong>
+            <button class="close-btn" @click="closeBadgeModal" aria-label="Close">×</button>
+          </div>
+          <div class="badge-tabs">
+            <button 
+              :class="{ active: activeBadgeTab === 'all' }" 
+              @click="activeBadgeTab = 'all'"
+            >
+              All
+            </button>
+            <button 
+              :class="{ active: activeBadgeTab === 'channel' }" 
+              @click="activeBadgeTab = 'channel'"
+            >
+              Channel
+            </button>
+          </div>
+          <div class="badge-grid">
+            <div v-if="modalLoading" class="modal-loading">Loading badges…</div>
+            <template v-else-if="filteredModalBadges.length > 0">
+              <template v-for="badge in filteredModalBadges" :key="badge.id + badge.url">
+                <img
+                  v-if="!failedBadgeUrls.has(badge.url)"
+                  :src="badge.url"
+                  alt="Badge"
+                  class="grid-badge"
+                  @error="handleImgError(badge.url)"
+                />
+                <div v-else class="grid-badge placeholder"></div>
+              </template>
+            </template>
+            <template v-else>
+              <div v-if="activeBadgeTab === 'channel'" class="no-badges-text">No channel badges found</div>
+              <template v-else>
+                 <div v-for="i in Number(modalUser?.owned_badges ?? 0)" :key="'ph' + i" class="grid-badge placeholder"></div>
+                 <span class="no-badges-text">Badge images unavailable</span>
+              </template>
+            </template>
+          </div>
+        </div>
+      </div>
 
     <ul v-if="paintStats.length && type === 'paintstats'" class="leaderboard-list">
       <li v-for="paint in paintStats" :key="paint.id" class="leaderboard-item">
@@ -564,6 +841,158 @@ onUnmounted(() => {
   margin-left: 10px;
 }
 
+.badges-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.owned-badges-row {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.mini-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+}
+
+.mini-badge.placeholder {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  border: 1px dashed rgba(255,255,255,0.18);
+}
+
+.placeholder-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.no-badges-text {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.toggle-badges {
+  margin-left: 6px;
+  padding: 3px 6px;
+  border-radius: 7px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.toggle-badges:hover,
+.toggle-badges:focus {
+  background: var(--panel-bg-hover, #23272e);
+  border-color: var(--panel-border-hover, #6ea1ff);
+  outline: none;
+}
+
+.badge-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.badge-modal-content {
+  width: min(900px, 92vw);
+  max-height: 80vh;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: 12px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.badge-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.close-btn:focus {
+  outline: none;
+}
+
+.close-btn:hover,
+.close-btn:focus-visible {
+  background: rgba(255,255,255,0.08);
+  color: #ff6666;
+  outline: 2px solid #ff6666;
+  outline-offset: 2px;
+  transition: background 0.2s, color 0.2s, outline 0.2s;
+}
+
+.badge-tabs {
+  display: flex;
+  gap: 10px;
+  padding: 10px 14px 0;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.badge-tabs button {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.badge-tabs button:hover {
+  color: #fff;
+}
+
+.badge-tabs button.active {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+.badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+  gap: 10px;
+  padding: 14px;
+  box-sizing: border-box;
+}
+
+.grid-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+}
+
+.grid-badge.placeholder {
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  border: 1px dashed rgba(255,255,255,0.18);
+}
+
 .color-bar {
   width: 160px;
   height: 64px;
@@ -594,6 +1023,40 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   animation: spin 1.5s linear infinite;
+}
+
+.channel-badge-count {
+  font-size: 0.8em;
+  color: #888;
+  margin-left: 4px;
+  cursor: default;
+  position: relative;
+}
+
+.channel-badge-count::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--panel-border);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease-in-out;
+  z-index: 100;
+  margin-bottom: 4px;
+}
+
+.channel-badge-count:hover::after {
+  opacity: 1;
+  visibility: visible;
 }
 
 @keyframes spin {
