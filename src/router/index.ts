@@ -74,11 +74,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/emoteSearch.vue'),
   },
   {
-    path: '/wrapped/:username/:type?',
-    name: 'Wrapped',
-    component: () => import('../views/wrapped.vue'),
-  },
-  {
     path: '/wrapped/2025/:username',
     name: 'Wrapped2025',
     component: () => import('../views/wrapped.vue'),
@@ -97,6 +92,11 @@ const routes: RouteRecordRaw[] = [
       }
       return false;
     },
+  },
+  {
+    path: '/wrapped/:username/:type?',
+    name: 'Wrapped',
+    component: () => import('../views/wrapped.vue'),
   },
 ];
 
