@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { sha256 } from '@noble/hashes/sha2.js';
-import {bytesToHex}  from '@noble/hashes/utils.js';
+import { bytesToHex }  from '@noble/hashes/utils.js';
 import { hmac } from '@noble/hashes/hmac.js';
 
 function encodeId(id: string, secret: string): string {
@@ -80,7 +80,7 @@ const routes: RouteRecordRaw[] = [
         window.location.href = `https://wrapped.potat.app/p/${encodeId(userId, import.meta.env.WRAPPED_KEY)}`;
       }
       if (username) {
-        window.location.href = `https://api.potat.app/wrapped/2025/login/${username}`;
+        window.location.href = 'https://api.potat.app/wrapped/2025/login';
       }
       return false;
     },
