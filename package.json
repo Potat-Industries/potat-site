@@ -13,6 +13,7 @@
     "format:fix": "prettier --write './**/*.{js,ts,json}'"
   },
   "dependencies": {
+    "crypto": "^1.0.1",
     "humanize-duration": "^3.31.0",
     "tinycolor2": "^1.6.0"
   },
