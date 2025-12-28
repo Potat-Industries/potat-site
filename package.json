@@ -13,7 +13,7 @@
     "format:fix": "prettier --write './**/*.{js,ts,json}'"
   },
   "dependencies": {
-    "create-hmac": "^1.1.7",
+    "@noble/hashes": "^2.0.1",
     "crypto": "^1.0.1",
     "humanize-duration": "^3.31.0",
     "tinycolor2": "^1.6.0"

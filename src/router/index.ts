@@ -1,13 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-const createHmac = require('create-hmac');
-
-function b64urlEncode(buf: Buffer): string {
-  return buf
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '');
-}
+import { sha256 } from '@noble/hashes/sha2.js';
+import {bytesToHex}  from '@noble/hashes/utils.js';
+import { hmac } from '@noble/hashes/hmac.js';
 
 function encodeId(id: string, secret: string): string {
   if (id === undefined || id === null) {
@@ -18,11 +12,10 @@ function encodeId(id: string, secret: string): string {
   }
 
   const idStr = String(id);
-
-  const sigFull = createHmac('sha256', secret).update(idStr).digest();
+  const sigFull = hmac(sha256, Buffer.from(secret), Buffer.from(idStr));
   const sig = sigFull.subarray(0, 16);
 
-  return `${idStr}.${b64urlEncode(sig)}`;
+  return `${idStr}.${bytesToHex(sig)}`;
 }
 
 const routes: RouteRecordRaw[] = [
