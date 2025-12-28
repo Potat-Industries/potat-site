@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import crypto from 'crypto';
-import { env } from 'process';
+const createHmac = require('create-hmac');
 
 function b64urlEncode(buf: Buffer): string {
   return buf
@@ -20,7 +19,7 @@ function encodeId(id: string, secret: string): string {
 
   const idStr = String(id);
 
-  const sigFull = crypto.createHmac('sha256', secret).update(idStr).digest();
+  const sigFull = createHmac('sha256', secret).update(idStr).digest();
   const sig = sigFull.subarray(0, 16);
 
   return `${idStr}.${b64urlEncode(sig)}`;
@@ -85,7 +84,7 @@ const routes: RouteRecordRaw[] = [
         if (!userId) {
           return false;
         }
-        window.location.href = `https://wrapped.potat.app/p/${encodeId(userId, String(env.WRAPPED_KEY))}`;
+        window.location.href = `https://wrapped.potat.app/p/${encodeId(userId, import.meta.env.WRAPPED_KEY)}`;
       }
       if (username) {
         window.location.href = `https://api.potat.app/wrapped/2025/login/${username}`;
