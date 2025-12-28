@@ -110,10 +110,10 @@ watch(route, () => {
 				</li>
 				<li v-if="username">
 					<router-link
-					:to="`/wrapped/${username}/user`"
+					:to="`/2025/wrapped/${username}/user`"
 					class="nav-link"
 					style="margin-bottom: 10px;"
-					>2024 Wrapped</router-link>
+					>2025 Wrapped</router-link>
 				</li>
 			</ul>
 		</li>

@@ -94,7 +94,7 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/wrapped/:username/:type?',
+    path: '/wrapped/2024/:username/:type?',
     name: 'Wrapped',
     component: () => import('../views/wrapped.vue'),
   },
