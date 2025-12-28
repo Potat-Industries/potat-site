@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import LoginButton from './components/loginButton.vue';
 import JoinedModal from './components/joinedModal.vue';
+import Banner from './components/Banner.vue';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { StatsSocket } from './assets/socket';
 import { useRoute } from 'vue-router';
@@ -120,9 +121,7 @@ watch(route, () => {
 		<li class="login-button-container mobile-menu"><LoginButton/></li>
 	</ul>
 
-		<div class="temp-bar">
-			<span>Getting your stream in the holiday spirit? <img src="/tatoSanta.png" alt="🎄" class="holiday-emoji" /> Try the <router-link to="/help/mergeset">mergeset</router-link> or <router-link to="/help/copyset">copyset</router-link> commands to festify your emotes!</span>
-		</div>
+		<Banner :username="username" />
 
 		<div class="main-container">
 			<router-view v-slot="{ Component }">
@@ -157,39 +156,6 @@ watch(route, () => {
   user-select: none;
 	font-size: 0.8em;
 	backdrop-filter: blur(2px);
-}
-.temp-bar {
-	background-color: rgba(165, 29, 42, 0.8);
-	outline: auto;
-	outline-color: rgba(31, 31, 31, 0.8);
-	padding: 10px;
-	justify-content: center;
-	text-align: center;
-	display: flex;
-	z-index: 9;
-	font-size: 1em;
-	position: sticky;
-	backdrop-filter: blur(2px);
-}
-
-img.holiday-emoji {
-	width: 22px;
-	height: 22px;
-	vertical-align: text-bottom;
-	display: inline-block;
-
-}
-.temp-bar a:link {
-	color: #aaccff; 
-	text-decoration: underline;
-}
-.temp-bar a:visited {
-	color: #dab6ff;
-	text-decoration: underline;
-}
-.temp-bar a:hover {
-	color: #ffaaaa;
-	text-decoration: underline;
 }
 .nav-link {
   margin-left: 10px;
