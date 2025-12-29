@@ -1,4 +1,22 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex }  from '@noble/hashes/utils.js';
+import { hmac } from '@noble/hashes/hmac.js';
+
+function encodeId(id: string, secret: string): string {
+  if (id === undefined || id === null) {
+    throw new Error('id is required');
+  }
+  if (!secret) {
+    throw new Error('secret is required');
+  }
+
+  const idStr = String(id);
+  const sigFull = hmac(sha256, Buffer.from(secret), Buffer.from(idStr));
+  const sig = sigFull.subarray(0, 16);
+
+  return `${idStr}.${bytesToHex(sig)}`;
+}
 
 const routes: RouteRecordRaw[] = [
   {
@@ -48,7 +66,27 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../views/emoteSearch.vue'),
   },
   {
-    path: '/wrapped/:username/:type?',
+    path: '/wrapped/2025/:username',
+    name: 'Wrapped2025',
+    component: () => import('../views/wrapped.vue'),
+    beforeEnter: (req) => {
+      const isAuthed = Boolean(localStorage.getItem('authorization'));
+      const username = req.params?.username;
+      if (isAuthed && !username) {
+        const userId = JSON.parse(localStorage.getItem('userState') || '{}')?.id;
+        if (!userId) {
+          return false;
+        }
+        window.location.href = `https://wrapped.potat.app/p/${encodeId(userId, import.meta.env.WRAPPED_KEY)}`;
+      }
+      if (username) {
+        window.location.href = 'https://api.potat.app/wrapped/2025/login';
+      }
+      return false;
+    },
+  },
+  {
+    path: '/wrapped/2024/:username/:type?',
     name: 'Wrapped',
     component: () => import('../views/wrapped.vue'),
   },
