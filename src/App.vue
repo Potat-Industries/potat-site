@@ -109,11 +109,11 @@ watch(route, () => {
 					>API Docs</router-link>
 				</li>
 				<li v-if="username">
-					<router-link
-					:to="`/2025/wrapped/${username}/user`"
+					<a
+					:href="`https://wrapped.potat.app/?username=${username}`"
 					class="nav-link"
 					style="margin-bottom: 10px;"
-					>2025 Wrapped</router-link>
+					>2025 Wrapped</a>
 				</li>
 			</ul>
 		</li>
