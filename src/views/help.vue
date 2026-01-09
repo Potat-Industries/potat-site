@@ -378,6 +378,7 @@ onMounted(async () => {
 							<strong>Examples:</strong>
 							<div class="examples-block">
 								<div v-for="(example, index) in (expandedExamples[getCommand.name] ? getCommand.examples : [getCommand.examples[0]])" :key="index" class="example-item">
+									<div v-if="index > 0" class="example-separator"></div>
 									<div v-if="example.description" class="example-description">{{ example.description }}</div>
 									<div class="chat-container">
 										<div v-if="example.trigger || example.input" class="chat-message user-message">
@@ -470,6 +471,7 @@ onMounted(async () => {
 											<strong>Examples:</strong>
 											<div class="examples-block flag-examples-block">
 												<div v-for="(example, exampleIndex) in (expandedFlagExamples[`${getCommand.name}-${flag.name}`] ? flag.examples : [flag.examples[0]])" :key="exampleIndex" class="example-item">
+													<div v-if="exampleIndex > 0" class="example-separator"></div>
 													<div v-if="example.description" class="example-description">{{ example.description }}</div>
 													<div class="chat-container">
 														<div v-if="example.trigger || example.input" class="chat-message user-message">
@@ -821,8 +823,14 @@ code {
   line-height: 1.5;
 }
 
+.example-separator {
+	border-top: 1px solid rgba(255, 255, 255, 0.2);
+	margin: 1rem 0;
+	width: 100%;
+}
+
 .example-item {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
 
 .example-item:last-of-type {
