@@ -23,7 +23,18 @@ module.exports = {
         ecmaVersion: 2023,
         sourceType: 'module'
       },
+      settings: {
+        'import/resolver': {
+          node: {
+            extensions: ['.js', '.ts']
+          }
+        }
+      },
       rules: {
+        'import/extensions': ['error', 'ignorePackages', {
+          js: 'never',
+          ts: 'never'
+        }],
         strict: ['error', 'global'],
         'no-eval': 'off',
         'new-cap': 'off',

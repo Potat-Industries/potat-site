@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { sha256 } from '@noble/hashes/sha2.js';
-import { bytesToHex }  from '@noble/hashes/utils.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 import { hmac } from '@noble/hashes/hmac.js';
 
 function encodeId(id: string, secret: string): string {
