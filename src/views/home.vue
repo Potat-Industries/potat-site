@@ -19,6 +19,7 @@ import TwitchStream from '../components/twitchStream.vue';
 					<span>PotatBotat</span>
 				</h1>
 				<h2>An emote, entertainment, and utility chatbot</h2>
+				<span class="minecraft-ribbon">Always Free!</span>
 			</div>
 		</div>
 		<div class="join-container">
@@ -38,6 +39,8 @@ import TwitchStream from '../components/twitchStream.vue';
 </template>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 .home-container {
 	display: grid;
 	grid-template-columns: 1fr auto;
@@ -65,10 +68,30 @@ import TwitchStream from '../components/twitchStream.vue';
 	box-shadow: var(--panel-shadow);
 	text-align: center;
 	margin: 0 auto;
+	position: relative;
+	overflow: visible;
 	h2 {
 		font-size: 22px;
 		font-weight: 400;
 	}
+}
+
+.minecraft-ribbon {
+	position: absolute;
+	top: -12px;
+	right: -26px;
+	padding: 5px 12px;
+	background: linear-gradient(135deg, #f7ad42 0%, #ffc65a 100%);
+	color: #2a1c05;
+	font-weight: 800;
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	transform: rotate(10deg);
+	border: 1px solid #d8891b;
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.35), inset -2px -2px 0 #c17115;
+	font-family: 'Press Start 2P', 'Minecraftia', 'Bungee', 'Impact', 'Trebuchet MS', sans-serif;
+	pointer-events: none;
 }
 
 .paint span {

@@ -120,10 +120,6 @@ watch(route, () => {
 		<li class="login-button-container mobile-menu"><LoginButton/></li>
 	</ul>
 
-		<div class="temp-bar">
-			<span>Getting your stream in the holiday spirit? <img src="/tatoSanta.png" alt="🎄" class="holiday-emoji" /> Try the <router-link to="/help/mergeset">mergeset</router-link> or <router-link to="/help/copyset">copyset</router-link> commands to festify your emotes!</span>
-		</div>
-
 		<div class="main-container">
 			<router-view v-slot="{ Component }">
 				<transition name="fade" mode="out-in">
