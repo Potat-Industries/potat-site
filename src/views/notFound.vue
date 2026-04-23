@@ -1,12 +1,14 @@
 <template>
   <div class="not-found">
-    <h1>Uh oh… wrong way!</h1>
+    <div class="panel">
+      <h1>Uh oh… wrong way!</h1>
 
-    <img src="/potatNerd.png" alt="" />
+      <img src="/potatNerd.png" alt="" />
 
-    <button class="home-button" @click="goHome">
-      Go Home
-    </button>
+      <button class="home-button" @click="goHome">
+        Go Home
+      </button>
+    </div>
   </div>
 </template>
 
@@ -41,6 +43,21 @@ img {
   color: white;
   text-shadow: -1px -1px 0 #333, 1px -1px 0 #333;
   transition: border-color 0.25s;
+}
+.panel {
+  background: var(--panel-bg);
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 .not-found {
   display: flex;
