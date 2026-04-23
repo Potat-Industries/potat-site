@@ -90,6 +90,16 @@ const routes: RouteRecordRaw[] = [
     name: 'Wrapped',
     component: () => import('../views/wrapped.vue'),
   },
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('../views/home.vue'),
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFound.vue'),
+  },
 ];
 
 const router = createRouter({
