@@ -78,10 +78,6 @@ handleMessage = (event: MessageEvent) => {
     user: JSON.stringify({ id, login, name, stv_id, is_channel }),
   });
 
-  eventBus.$on('signOut', () => {
-    signOut();
-  });
-
   userState.value = JSON.stringify({ id, login, name, stv_id, is_channel });
   assignUser();
 
