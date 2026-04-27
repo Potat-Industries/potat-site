@@ -217,11 +217,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: row;
   align-items: center;
-	flex-wrap: wrap;
+  flex-wrap: wrap;
   justify-content: center;
-  max-width: fit-content;
   gap: 10px;
-  margin-bottom: 20px;
+  margin: 0 auto 20px auto;
+  width: fit-content;
   padding: 0.5rem;
   border-radius: 0.5rem;
   background-color: rgba(31, 31, 31, 0.9);
