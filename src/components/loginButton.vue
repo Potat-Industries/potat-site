@@ -90,6 +90,10 @@ const assignUser = async (): Promise<void> => {
 }
 
 const handleMessage = (event: MessageEvent) => {
+  if (event.origin !== new URL(API_BASE).origin) {
+    return;
+  }
+
   const { id, login, name, stv_id, token, is_channel } = event.data;
 
   if (!token) {

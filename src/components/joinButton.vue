@@ -2,7 +2,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { default as eventBus } from '../assets/eventBus';
 import { brightenColor, delay } from '../assets/utilities';
-import { fetchBackend } from '../assets/request';
+import { fetchBackend, API_BASE } from '../assets/request';
 import { TokenUserData, TwitchUser, UserState } from '../types/misc';
 import computePaintStyle from '../assets/applyPaint';
 
@@ -60,6 +60,10 @@ assignUser = async (): Promise<void> => {
 },
 
 handleMessage = (event: MessageEvent) => {
+  if (event.origin !== new URL(API_BASE).origin) {
+    return;
+  }
+
   const { id, login, name, stv_id, token, is_channel } = event.data;
 
   if (!token) {
