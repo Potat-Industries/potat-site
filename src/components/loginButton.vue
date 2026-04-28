@@ -138,6 +138,10 @@ onMounted((): void => {
 
 onUnmounted(() => {
   eventBus.$off('signOut', signOut);
+  if (loginPopupTimer) {
+    clearInterval(loginPopupTimer);
+  }
+  window.removeEventListener('message', handleMessage);
 });
 
 </script>
