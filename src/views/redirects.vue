@@ -9,9 +9,22 @@ response = ref(''),
 
 fetchData = async () => {
   try {
+    const trimmed = inputUrl.value.trim();
+    let parsed: URL;
+    try {
+      parsed = new URL(trimmed);
+    } catch {
+      response.value = 'Invalid URL';
+      return;
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      response.value = 'Only http and https URLs are allowed';
+      return;
+    }
+
     const res = await fetchBackend('redirect', {
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: inputUrl.value.trim() }),
+      body: JSON.stringify({ url: trimmed }),
       method: 'POST'
     })
 
@@ -27,13 +40,8 @@ fetchData = async () => {
   }
 },
 
-copyToClipboard = () => {
-  const textarea = document.createElement('textarea');
-  textarea.value = response.value;
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand('copy');
-  document.body.removeChild(textarea);
+copyToClipboard = async () => {
+  await navigator.clipboard.writeText(response.value);
 };
 </script>
 
