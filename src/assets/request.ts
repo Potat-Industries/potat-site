@@ -33,6 +33,12 @@ export async function makeRequest<T = unknown>(
   }
 
   if (options?.auth) {
+    const apiOrigin = new URL(API_BASE).origin;
+    const requestOrigin = new URL(url, window.location.href).origin;
+    if (requestOrigin !== apiOrigin) {
+      throw new Error(`Refusing to send auth token to untrusted origin: ${requestOrigin}`);
+    }
+
     options.headers = {
       'X-Potat-User-Agent': `Potat-Site: ${navigator.userAgent}`,
       ...options.headers,
