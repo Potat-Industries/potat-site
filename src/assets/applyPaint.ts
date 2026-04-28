@@ -10,6 +10,20 @@ import type {
   PaintRawData,
 } from '../types/misc';
 
+const TRUSTED_IMAGE_ORIGINS = ['https://cdn.7tv.app', 'https://static.7tv.app'];
+
+const isSafeHex = (hex: string): boolean => /^#[0-9a-fA-F]{3,8}$/.test(hex);
+
+const isSafeNumber = (n: unknown): n is number => typeof n === 'number' && Number.isFinite(n);
+
+const isTrustedUrl = (url: string): boolean => {
+  try {
+    return TRUSTED_IMAGE_ORIGINS.includes(new URL(url).origin);
+  } catch {
+    return false;
+  }
+};
+
 const computeLinearGradientLayer = (
   layer: PaintLayerTypeLinearGradient,
   opacity: number,
@@ -19,7 +33,10 @@ const computeLinearGradientLayer = (
   }
 
   const prefix = layer.repeating ? 'repeating-' : '';
-  const stops = layer.stops.map((stop) => `${stop.color.hex} ${stop.at * 100}%`).join(', ');
+  const stops = layer.stops
+    .filter((stop) => isSafeHex(stop.color.hex) && isSafeNumber(stop.at))
+    .map((stop) => `${stop.color.hex} ${stop.at * 100}%`).join(', ');
+  if (!isSafeNumber(layer.angle) || stops.length === 0) return undefined;
   const gradient = `${prefix}linear-gradient(${layer.angle}deg, ${stops})`;
   return {
     opacity,
@@ -37,7 +54,10 @@ const computeRadialGradientLayer = (
 
   const prefix = layer.repeating ? 'repeating-' : '';
   const shape = layer.shape === 'CIRCLE' ? 'circle' : 'ellipse';
-  const stops = layer.stops.map((stop) => `${stop.color.hex} ${stop.at * 100}%`).join(', ');
+  const stops = layer.stops
+    .filter((stop) => isSafeHex(stop.color.hex) && isSafeNumber(stop.at))
+    .map((stop) => `${stop.color.hex} ${stop.at * 100}%`).join(', ');
+  if (stops.length === 0) return undefined;
   const gradient = `${prefix}radial-gradient(${shape}, ${stops})`;
   return {
     opacity,
@@ -55,6 +75,10 @@ const computeImageLayer = (
   );
 
   if (!img) {
+    return undefined;
+  }
+
+  if (!isTrustedUrl(img.url)) {
     return undefined;
   }
 
@@ -80,6 +104,12 @@ const computeDropShadows = (
   }
 
   return shadows
+    .filter((s) => (
+      isSafeHex(s.color.hex)
+      && isSafeNumber(s.offsetX)
+      && isSafeNumber(s.offsetY)
+      && isSafeNumber(s.blur)
+    ))
     .map((s) => `drop-shadow(${s.color.hex} ${s.offsetX}px ${s.offsetY}px ${s.blur}px)`)
     .join(' ');
 };
