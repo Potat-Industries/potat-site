@@ -231,6 +231,9 @@ img.holiday-emoji {
 }
 .dropdown-content .nav-link {
   display: block;
+  margin-left: 0;
+  width: 100%;
+  box-sizing: border-box;
   margin-right: 0;
   padding: 12px;
   white-space: nowrap;
@@ -243,6 +246,11 @@ img.holiday-emoji {
     display: flex;
     align-items: center;
   }
+
+/* 
+  .nav-link {
+	margin-left: 10px;
+  } */
 
   .more-dropdown .nav-link {
     margin-left: 5px;
