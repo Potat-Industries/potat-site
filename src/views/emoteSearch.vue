@@ -189,7 +189,7 @@ onUnmounted(() => {
       <div class="popup-content">
         <img :src="selectedEmote.emoteURL" :alt="selectedEmote.emoteCode"/>
         <h3>{{ selectedEmote.emoteCode }}</h3>
-        <p>Owned By: {{ bestName(selectedEmote.channelName, selectedEmote.channelLogin) }}</p>
+        <p>Owned By: {{ bestName(selectedEmote.channelLogin, selectedEmote.channelName) }}</p>
         <p>Owner ID: {{ selectedEmote.channelID }}</p>
         <p>ID: {{ selectedEmote.emoteID }}</p>
         <p>Format: {{ selectedEmote.emoteAssetType }}</p>
@@ -199,7 +199,7 @@ onUnmounted(() => {
         <p v-if="selectedEmote.bitCost">Bit Cost: {{ selectedEmote.bitCost }}</p>
         <p v-if="selectedEmote.artist">Artist: {{ bestName(selectedEmote.artist.displayName, selectedEmote.artist.login) }}</p>
       </div>
-      <button @click="closePopup" class="close-button">Close</button>
+      <button @click.stop="closePopup" class="close-button">Close</button>
     </div>
   </div>
 </template>
