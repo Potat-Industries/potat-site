@@ -87,7 +87,7 @@ fetchEmoteHistory = async (pagination?: string | null) => {
 			let expired = null;
 
       if (!update.user_stv_pfp || update.user_stv_pfp === '//cdn.7tv.app/') {
-        update.user_stv_pfp = update.user_pfp;
+        userPfp = update.user_pfp;
       }
 
       if (update.action === 'ALIAS') {
@@ -142,7 +142,7 @@ fetchEmoteHistory = async (pagination?: string | null) => {
 				continue;
 			}
 
-      const key = `${update.emote_id}:${update.ago}:${update.action}:${update.user_login}`
+      const key = `${update.emote_id}:${update.action}:${update.user_login}:${update.set_id}`
       imRetarded.set(key, update);
     }
 

@@ -41,7 +41,7 @@ onMounted(async () => {
 			case EventType.PotatoUpdate:
 				for (let i = 0; i < update.updateCount; i++) {
 					data.value.potato.total += 1;
-					await delay(Math.min(5, 5000/update.updateCount));
+					await delay(Math.min(5000 / update.updateCount, 5000));
 				}
 				break;
 		}
