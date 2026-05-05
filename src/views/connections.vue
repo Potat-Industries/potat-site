@@ -54,10 +54,9 @@ shakeButton = (platform: string) => {
 };
 
 onMounted(() => {
-  eventBus.$on('newToken', (payload: { token: any; user: any }) => {
-    const userState = JSON.parse(payload.user) ?? {};
+  eventBus.$on('newToken', (payload: { token: string; user: string }) => {
     authorizationToken.value = payload.token;
-    userState.value = userState;
+    userState.value = payload.user;
   })
 })
 </script>
