@@ -173,6 +173,7 @@ modalLoading = ref(false),
 ownersMapRef = ref<Map<string, BadgeOwnersStat>>(new Map()),
 activeBadgeTab = ref<'all' | 'channel'>('all'),
 modalBadges = ref<ModalBadge[]>([]),
+searchQuery = ref(''),
 
 fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => {
 	if (loading.value) {
@@ -301,10 +302,19 @@ fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => 
         }
       });
 
-      for (const user of response.data) {
+      const currentSize = map.size;
+
+      for (const [index, user] of response.data.entries()) {
+        user.rank = currentSize + index + 1;
         map.set(user.bestName, user);
       }
-      leaderboarders.value = [...map.values()]
+
+      leaderboarders.value = [...map.values()];
+
+      // for (const user of response.data) {
+      //   map.set(user.bestName, user);
+      // }
+      // leaderboarders.value = [...map.values()]
       cursor.value = response?.pagination?.cursor;
     }
 	} finally {
@@ -480,6 +490,28 @@ const filteredModalBadges = computed(() => {
   return modalBadges.value;
 });
 
+const normalizedSearch = computed(() => searchQuery.value.trim().toLowerCase());
+
+const filteredLeaderboarders = computed(() => {
+  if (!normalizedSearch.value) {
+    return leaderboarders.value;
+  }
+
+  return leaderboarders.value.filter(user =>
+    user.bestName?.toLowerCase().includes(normalizedSearch.value)
+  );
+});
+
+const filteredOwnedBadgeUserStats = computed(() => {
+  if (!normalizedSearch.value) {
+    return ownedBadgeUserStats.value;
+  }
+
+  return ownedBadgeUserStats.value.filter(user => 
+    user.bestName?.toLowerCase().includes(normalizedSearch.value)
+  );
+});
+
 onMounted(() => {
   fetchLeaderboard(type.value, undefined);
 
@@ -518,6 +550,12 @@ onUnmounted(() => {
           <option value="emoteusechannel">Channel Emote Uses</option>
           <option value="emoteuseuser">User Emote Uses</option>
         </select>
+        <input
+          v-model="searchQuery"
+          type="text"
+          class="search-box"
+          placeholder="Search username..."
+          />
     </div>
 
     <ul v-if="colorStats.length && type === 'twitchcolors'" class="leaderboard-list">
@@ -567,7 +605,7 @@ onUnmounted(() => {
     </ul>
 
     <ul v-if="ownedBadgeUserStats.length && type === 'twitchownedbadges'" class="leaderboard-list">
-        <li v-for="badge in ownedBadgeUserStats" :key="badge.bestName" class="leaderboard-item">
+        <li v-for="badge in filteredOwnedBadgeUserStats" :key="badge.bestName" class="leaderboard-item">
         <div class="profile-picture">
           <a :href="`https://twitch.tv/${badge.bestName?.toLowerCase()}`" target="_blank">
             <img :src="badge.user_pfp ?? 'https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-600x600.png'"/>
@@ -686,7 +724,7 @@ onUnmounted(() => {
     </ul>
 
     <ul class="leaderboard-list" v-if="leaderboarders.length && type !== 'twitchbadges'">
-      <li v-for="(user, idx) in leaderboarders" :key="user.bestName" class="leaderboard-item">
+      <li v-for="(user, idx) in filteredLeaderboarders" :key="user.bestName" class="leaderboard-item">
         <div class="profile-picture">
           <a :href="`https://twitch.tv/${user.bestName.toLowerCase()}`" target="_blank">
             <img :src="user.user_pfp ?? 'https://static-cdn.jtvnw.net/user-default-pictures-uv/cdd517fe-def4-11e9-948e-784f43822e80-profile_image-600x600.png'"/>
@@ -694,7 +732,7 @@ onUnmounted(() => {
         </div>
         <div class="text-content">
           <div class="rank-name">
-            #{{ idx + 1 }}
+            #{{ user.rank ?? idx + 1 }}
             <a :href="`https://twitch.tv/${user.bestName.toLowerCase()}`" target="_blank">
               <strong :style="{ color: brightenColor(user.user_color) }">{{ user.bestName }}</strong>
             </a>
@@ -767,6 +805,22 @@ onUnmounted(() => {
   border-radius: 0.5rem;
   background-color: rgba(31, 31, 31, 0.94);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-box {
+  outline: auto -webkit-focus-ring-color;
+  outline-color: #f4f4f4;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background-color: rgba(31, 31, 31, 0.94);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border: none;
+  min-width: 220px;
+}
+
+.search-box::placeholder {
+  color: #aaa;
 }
 
 .leaderboard-list {
