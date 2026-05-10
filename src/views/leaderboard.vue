@@ -554,8 +554,8 @@ onUnmounted(() => {
           v-model="searchQuery"
           type="text"
           class="search-box"
-          placeholder="Search username..."
-          />
+          :placeholder="`Search ${leaderboarders.length.toLocaleString()} users`"
+        />
     </div>
 
     <ul v-if="colorStats.length && type === 'twitchcolors'" class="leaderboard-list">
@@ -816,11 +816,23 @@ onUnmounted(() => {
   background-color: rgba(31, 31, 31, 0.94);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   border: none;
-  min-width: 220px;
+  width: 220px;
 }
 
 .search-box::placeholder {
   color: #aaa;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.search-helper {
+  font-size: 12px;
+  color: #aaa;
+  padding-left: 2px;
 }
 
 .leaderboard-list {
