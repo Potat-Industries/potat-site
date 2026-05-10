@@ -71,7 +71,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'ANILIST' }" 
           @click="connect('ANILIST')"
         >
-          <img src="https://upload.wikimedia.org/wikipedia/commons/6/61/AniList_logo.svg" class="icon"/> Anilist
+          <img src="/anilist.svg" class="icon"/> Anilist
         </button>
 
         <button
@@ -79,7 +79,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'KICK' }" 
           @click="connect('KICK')"
         >
-          <img src="https://kick.com/favicon.ico" class="icon"/> Kick
+          <img src="/kick.ico" class="icon"/> Kick
         </button>
 
         <button 
@@ -87,7 +87,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'DISCORD' }" 
           @click="connect('DISCORD')"
         >
-          <img src="https://cdn.prod.website-files.com/6257adef93867e50d84d30e2/636e0a6918e57475a843f59f_icon_clyde_black_RGB.svg" class="icon"/> Discord
+          <img src="/discord.svg" class="icon"/> Discord
         </button>
 
         <button 
@@ -95,7 +95,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'STEAM' }" 
           @click="connect('STEAM')"
         >
-          <img src="https://steamcommunity.com/favicon.ico" class="icon"/> Steam
+          <img src="/steam.ico" class="icon"/> Steam
         </button>
 
         <button 
@@ -103,7 +103,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'TRAKT' }" 
           @click="connect('TRAKT')"
         >
-          <img src="https://walter-r2.trakt.tv/hotlink-ok/public/2024/favicon.png" class="icon"/> Trakt
+          <img src="/trakt.png" class="icon"/> Trakt
         </button>
       </div>
     </div>
