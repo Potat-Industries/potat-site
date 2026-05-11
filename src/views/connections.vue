@@ -79,7 +79,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'KICK' }" 
           @click="connect('KICK')"
         >
-          <img src="/kick.ico" class="icon"/> Kick
+          <img src="/kick.png" class="icon"/> Kick
         </button>
 
         <button 
@@ -95,7 +95,7 @@ onMounted(() => {
           :class="{ shake: buttonToShake === 'STEAM' }" 
           @click="connect('STEAM')"
         >
-          <img src="/steam.ico" class="icon"/> Steam
+          <img src="/steam.png" class="icon"/> Steam
         </button>
 
         <button 
