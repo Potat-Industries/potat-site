@@ -25,7 +25,7 @@ newState = reactive<{ value: boolean }>({
 }),
 
 isAuthenticated = computed<boolean>(() => {
-  return authorizationToken.value !== null || userState.value !== null;
+  return authorizationToken.value !== null && userState.value !== null;
 }),
 
 isChannel = computed<boolean>(() => {
