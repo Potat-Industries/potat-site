@@ -16,8 +16,16 @@ enum EventType {
 
 
 const data: Ref = ref({});
+const fetchError = ref(false);
 onMounted(async () => {
-	data.value = await fetchBackend('').then(res => res?.data?.[0])
+	try {
+		const res = await fetchBackend('');
+		data.value = res?.data?.[0];
+		if (!data.value) fetchError.value = true;
+	} catch (err) {
+		console.error('[statsBox] Failed to fetch stats:', err);
+		fetchError.value = true;
+	}
 
 	eventBus.$on('update', async (stats) => {
 		const { data: update, topic } = stats as UpdateEvent;
@@ -50,7 +58,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="data.misc" class="text-container">
+  <div v-if="fetchError" class="text-container error-state">Failed to load stats.</div>
+  <div v-else-if="data.misc" class="text-container">
 		<strong>Commands used:</strong>
 		<span>{{ data?.misc?.commandsUsed?.toLocaleString() }}</span>
 
@@ -93,4 +102,9 @@ onMounted(async () => {
 	}
 }
 
+.error-state {
+	display: block;
+	color: #f87171;
+	font-size: 0.9em;
+}
 </style>

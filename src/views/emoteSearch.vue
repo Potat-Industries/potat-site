@@ -16,6 +16,7 @@ emotes = ref<Emote[]>([]),
 isRequesting = ref(false),
 selectedEmote = ref<EmoteInfo | null>(null),
 isLoading = ref(false),
+searchError = ref<string | null>(null),
 searchEmotes = async (query: string, options: SearchOptions): Promise<Emote[]> => {
   if (isRequesting.value) return [];
 
@@ -35,6 +36,7 @@ searchEmotes = async (query: string, options: SearchOptions): Promise<Emote[]> =
 
   if (response.errors?.length) {
     console.error(response.errors);
+    searchError.value = response.errors[0]?.message ?? 'Search failed. Please try again.';
     return [];
   }
 
@@ -73,6 +75,7 @@ onQuery = async () => {
 onNewQuery = async () => {
   emotes.value = [];
   cursor.value = null;
+  searchError.value = null;
   onQuery();
 },
 
@@ -149,6 +152,7 @@ onUnmounted(() => {
 
 <template>
   <div class="container">
+    <div v-if="searchError" class="search-error" role="alert">{{ searchError }}</div>
     <div class="search-bar">
       <input
         type="text"
@@ -310,5 +314,12 @@ onUnmounted(() => {
 
 .close-button:hover {
   background-color: rgba(255, 255, 255, 0.5);
+}
+
+.search-error {
+  color: #f87171;
+  margin-bottom: 12px;
+  font-size: 0.9em;
+  text-align: center;
 }
 </style>
