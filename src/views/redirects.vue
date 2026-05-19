@@ -9,34 +9,47 @@ response = ref(''),
 
 fetchData = async () => {
   try {
-    const trimmed = inputUrl.value.trim();
+    let trimmed = inputUrl.value.trim();
+
+    if (!/^https?:\/\//i.test(trimmed)) {
+      trimmed = `https://${trimmed}`;
+    }
+
     let parsed: URL;
+
     try {
       parsed = new URL(trimmed);
     } catch {
-      response.value = 'Invalid URL';
-      return;
-    }
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-      response.value = 'Only http and https URLs are allowed';
+      response.value = `Invalid URL`;
       return;
     }
 
-    const res = await fetchBackend('redirect', {
+    if (parsed.protocol !== `http:` && parsed.protocol !== `https:`) {
+      response.value = `Only http and https URLs are allowed`;
+      return;
+    }
+
+    const res = await fetchBackend(`redirect`, {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: trimmed }),
-      method: 'POST'
-    })
+      method: `POST`
+    });
 
     if (res.errors?.length) {
       response.value = res.errors[0].message;
       return;
     }
 
-    response.value = res.data[0]?.url;
+    type RedirectResponse = {
+      url: string;
+    };
+
+    const data = res.data as RedirectResponse[];
+
+    response.value = data[0]?.url || ``;
   } catch (error) {
-    console.error('Error fetching data:', error);
-    response.value = 'Error fetching data';
+    console.error(`Error fetching data:`, error);
+    response.value = `Error fetching data`;
   }
 },
 
