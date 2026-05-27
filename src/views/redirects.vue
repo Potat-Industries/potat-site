@@ -11,16 +11,25 @@ fetchData = async () => {
   try {
     let trimmed = inputUrl.value.trim();
 
-    if (!/^https?:\/\//i.test(trimmed)) {
-      trimmed = `https://${trimmed}`;
-    }
+    const isValidDomain = (hostname: string) => {
+      return /^(?!-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,}$/i.test(hostname);
+    };
+
+    const withProtocol = /^https?:\/\//i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed}`;
 
     let parsed: URL;
 
     try {
-      parsed = new URL(trimmed);
+      parsed = new URL(withProtocol);
     } catch {
-      response.value = `Invalid URL`;
+      response.value = `Please enter a valid URL`;
+      return;
+    }
+
+    if (!isValidDomain(parsed.hostname)) {
+      response.value = `Please enter a valid domain`;
       return;
     }
 
@@ -31,7 +40,7 @@ fetchData = async () => {
 
     const res = await fetchBackend(`redirect`, {
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: trimmed }),
+      body: JSON.stringify({ url: parsed.toString() }),
       method: `POST`
     });
 
