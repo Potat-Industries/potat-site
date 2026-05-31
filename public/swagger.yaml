@@ -1000,6 +1000,74 @@ paths:
               schema:
                 $ref: '#/components/schemas/RateLimitResponse'
                 
+  /documents:
+    post:
+      servers:
+        - url: https://h.potat.app
+      summary: Create a new haste
+      tags:
+        - Haste
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              type: string
+              example: potato
+          text/markdown:
+            schema:
+              type: string
+              example: "# potat"
+          application/json:
+            schema:
+              type: object
+              example:
+                message: potato
+      responses:
+        '200':
+          description: Haste created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: abc123
+        '400':
+          description: Error parsing request
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Error parsing form
+        '411':
+          description: Empty request body
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Length required
+        '415':
+          description: Unsupported media type
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: Invalid media type
+        '429':
+          description: Rate Limit Reached
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateLimitResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerError'
+                
   /leaderboard:
     get:
       summary: Get the leaderboard
