@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { fetchBackend } from '../assets/request';
-import { brightenColor } from '../assets/utilities';
+import { fetchBackend } from '$assets/request';
+import { brightenColor } from '$assets/utilities';
 import router from '../router';
 import { useRoute } from 'vue-router';
 const route = useRoute();

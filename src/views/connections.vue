@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { fetchBackend } from '../assets/request';
-import eventBus from '../assets/eventBus';
+import { fetchBackend } from '$assets/request';
+import eventBus from '$assets/eventBus';
 
 const
 
