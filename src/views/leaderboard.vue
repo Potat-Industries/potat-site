@@ -184,23 +184,29 @@ fetchLeaderboard = async (type: LeaderboardTypes, last?: string | undefined) => 
 
 	try {
     if (type === 'twitchbadges') {
-      const response = await fetchBackend<BadgeStat>(`twitch/badges`, {
-        params: { first: 200 }
-      }).then(res => res?.data?.map(b => {
-        if (b.badge === 'NOBADGE') return;
-        if (!b.url) return b;
-        b.url = normalizeSize3(b.url);
-        b.rank = b.rank -1;
-        return b;
-      }).filter(Boolean)as BadgeStat[]);
+      const response = await fetchBackend<BadgeStat>(`twitch/badges`)
 
-      badgeStats.value = response.sort((a, b) => {
-        if (loserOrLeader.value) {
-          return b.rank - a.rank;
-        } else {
-          return a.rank - b.rank;
-        }
-      }) ?? [];
+      badgeStats.value = response?.data
+        ?.map(b => {
+          if (b.badge === 'NOBADGE') {
+            return;
+          }
+          if (!b.url) {
+            return b;
+          }
+          b.url = normalizeSize3(b.url);
+          b.rank = b.rank -1;
+          
+          return b;
+        })
+        ?.sort((a, b) => {
+          if (loserOrLeader.value) {
+            return b.rank - a.rank;
+          } else {
+            return a.rank - b.rank;
+          }
+        })
+        ?.filter(Boolean) ?? [];
     } else if (type === 'twitchownedbadges') {
       const response = await fetchBackend<UserBadgeOwnedStat>(`twitch/badges`, {
         params: { first: 100, owned: true, after: last }
