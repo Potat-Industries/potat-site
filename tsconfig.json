@@ -17,11 +17,12 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
-  	}
+      "@/*": ["./src/*"],
+      "$components/*": ["./src/components/*"],
+      "$assets/*": ["./src/assets/*"],
+      "$types/*": ["./src/types/*"]
+    }
   },
-	"include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
-	"references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

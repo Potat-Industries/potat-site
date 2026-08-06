@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-import { fileURLToPath, URL } from 'node:url';
-import viteTsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { fileURLToPath, URL } from 'node:url'
+import viteTsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -16,6 +16,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '$components': fileURLToPath(new URL('./src/components', import.meta.url)),
+      '$assets': fileURLToPath(new URL('./src/assets', import.meta.url)),
+      '$types': fileURLToPath(new URL('./src/types', import.meta.url)),
     },
   },
   optimizeDeps: {
@@ -34,4 +37,4 @@ export default defineConfig({
       ],
     },
   },
-});
+})

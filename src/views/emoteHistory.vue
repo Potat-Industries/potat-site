@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { brightenColor } from '../assets/utilities';
-import { fetchBackend } from '../assets/request';
-import { SimpleChannel, ComputedExtras, HistoryResponse } from '../types/emotes';
+import { brightenColor } from '$assets/utilities';
+import { fetchBackend } from '$assets/request';
+import { SimpleChannel, ComputedExtras, HistoryResponse } from '$types/emotes';
 
 interface ProviderInfo {
 	logo: string;

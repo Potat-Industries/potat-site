@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { fetchBackend } from '../assets/request';
-import { SearchOptions, EmoteInfo, Emote } from '../types/emotes';
+import { fetchBackend } from '$assets/request';
+import { SearchOptions, EmoteInfo, Emote } from '$types/emotes';
 
 let observer: IntersectionObserver;
 
