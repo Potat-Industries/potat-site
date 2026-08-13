@@ -104,7 +104,7 @@ onMounted(async () => {
           @click="connect('ANILIST')"
         >
           <img src="/anilist.svg" class="icon"/> Anilist
-          <span v-if="linkedPlatforms.has('ANILIST')" class="linked-badge">✓ Linked</span>
+          <span v-if="linkedPlatforms.has('ANILIST')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button
@@ -113,7 +113,7 @@ onMounted(async () => {
           @click="connect('KICK')"
         >
           <img src="/kick.png" class="icon"/> Kick
-          <span v-if="linkedPlatforms.has('KICK')" class="linked-badge">✓ Linked</span>
+          <span v-if="linkedPlatforms.has('KICK')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button 
@@ -122,7 +122,7 @@ onMounted(async () => {
           @click="connect('DISCORD')"
         >
           <img src="/discord.svg" class="icon"/> Discord
-          <span v-if="linkedPlatforms.has('DISCORD')" class="linked-badge">✓ Linked</span>
+          <span v-if="linkedPlatforms.has('DISCORD')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button 
@@ -131,7 +131,7 @@ onMounted(async () => {
           @click="connect('STEAM')"
         >
           <img src="/steam.png" class="icon"/> Steam
-          <span v-if="linkedPlatforms.has('STEAM')" class="linked-badge">✓ Linked</span>
+          <span v-if="linkedPlatforms.has('STEAM')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button 
@@ -140,7 +140,7 @@ onMounted(async () => {
           @click="connect('TRAKT')"
         >
           <img src="/trakt.png" class="icon"/> Trakt
-          <span v-if="linkedPlatforms.has('TRAKT')" class="linked-badge">✓ Linked</span>
+          <span v-if="linkedPlatforms.has('TRAKT')" class="disconnect-option">Disconnect</span>
         </button>
       </div>
     </div>
@@ -194,7 +194,7 @@ button .icon {
   height: 24px;
 }
 
-.linked-badge {
+.disconnect-option {
   margin-left: auto;
   font-size: 12px;
   font-weight: 600;
