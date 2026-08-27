@@ -90,6 +90,13 @@ watch(route, () => {
 					>Emote Search</router-link>
 				</li>
 				<li>
+					<router-link
+					:to="username ? `/user/${username}` : { name: 'User' }"
+					class="nav-link"
+					style="margin-bottom: 10px;"
+					>User Lookup</router-link>
+				</li>
+				<li>
 					<a
 					href="https://haste.potat.app"
 					class="nav-link external-link"

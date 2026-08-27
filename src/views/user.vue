@@ -120,8 +120,16 @@ interface Potatoes {
 
 interface Entry {
   user: PotatUser;
-  channel: Channel;
-  potatoes: Potatoes;
+  channel?: Channel;
+  potatoes: Potatoes | null;
+}
+
+const VALID_TABS = ['commands', 'connections', 'potatoes', 'settings'] as const;
+type Tab = typeof VALID_TABS[number];
+
+function tabFromHash(hash: string): Tab | undefined {
+  const clean = hash.replace(/^#/, '') as Tab;
+  return VALID_TABS.includes(clean) ? clean : undefined;
 }
 
 const route = useRoute();
@@ -132,7 +140,16 @@ entry = ref<Entry | null>(null),
 loading = ref(false),
 notFound = ref(false),
 searchQuery = ref(''),
-activeTab = ref<'commands' | 'connections' | 'potatoes' | 'settings'>('commands'),
+activeTab = ref<Tab>('connections'),
+
+defaultTab = (e: Entry | null): Tab => (e?.channel ? 'commands' : 'connections'),
+
+resolveTab = (e: Entry | null): Tab => tabFromHash(route.hash) ?? defaultTab(e),
+
+setTab = (tab: Tab) => {
+  activeTab.value = tab;
+  router.replace({ path: route.path, hash: `#${tab}` });
+},
 
 fetchUser = async (username: string | undefined) => {
   entry.value = null;
@@ -145,6 +162,7 @@ fetchUser = async (username: string | undefined) => {
     const res = await fetchBackend<Entry>(`users/${encodeURIComponent(username)}`);
     entry.value = res?.data?.[0] ?? null;
     if (!entry.value) notFound.value = true;
+    activeTab.value = resolveTab(entry.value);
   } catch (err) {
     console.error('[user] Failed to fetch user:', err);
     notFound.value = true;
@@ -182,6 +200,15 @@ watch(
   () => route.params.username,
   (username) => fetchUser(username as string | undefined),
   { immediate: true },
+);
+
+watch(
+  () => route.hash,
+  (hash) => {
+    if (!entry.value) return;
+    const t = tabFromHash(hash as string);
+    if (t) activeTab.value = resolveTab(entry.value);
+  },
 );
 </script>
 
@@ -221,105 +248,116 @@ watch(
           <strong class="username" :style="{ color: getColor(entry) }">{{ getName(entry) }}</strong>
           <div class="meta-row">
             <span>Level {{ entry.user.level }}</span>
-            <span>Rank #{{ entry.potatoes.rank }}</span>
-            <span>🥔 {{ entry.potatoes.count.toLocaleString() }}</span>
+            <template v-if="entry.potatoes">
+              <span>Rank #{{ entry.potatoes.rank }}</span>
+              <span>🥔 {{ entry.potatoes.count.toLocaleString() }}</span>
+            </template>
+            <span v-else class="untracked">No potatoes</span>
           </div>
         </div>
       </div>
 
       <div class="tabs">
-        <button :class="{ active: activeTab === 'commands' }" @click="activeTab = 'commands'">Commands</button>
-        <button :class="{ active: activeTab === 'connections' }" @click="activeTab = 'connections'">Connections</button>
-        <button :class="{ active: activeTab === 'potatoes' }" @click="activeTab = 'potatoes'">Potatoes</button>
-        <button :class="{ active: activeTab === 'settings' }" @click="activeTab = 'settings'">Channel Settings</button>
+        <button :class="{ active: activeTab === 'commands' }" @click="setTab('commands')">Commands</button>
+	    <button :class="{ active: activeTab === 'connections' }" @click="setTab('connections')">Connections</button>
+	    <button :class="{ active: activeTab === 'potatoes' }" @click="setTab('potatoes')">Potatoes</button>
+	    <button :class="{ active: activeTab === 'settings' }" @click="setTab('settings')">Channel Settings</button>
       </div>
 
-      <ul v-if="activeTab === 'commands'" class="item-list">
-        <li v-for="cmd in entry.channel.commands" :key="cmd.command_id" class="item">
-          <div class="item-top">
-            <span class="mono">{{ cmd.name ?? cmd.trigger ?? '(unnamed)' }}</span>
-            <span class="type-tag">{{ cmd.type }}</span>
-            <span v-if="!cmd.active" class="disabled-tag">disabled</span>
-          </div>
-          <code v-if="cmd.type === 'COMMAND'" class="response">{{ cmd.run_command }}</code>
-          <p v-else class="response">{{ cmd.response }}</p>
-          <div class="item-bottom">
-            <span>used {{ cmd.use_count.toLocaleString() }}x</span>
-            <span>cooldown {{ cmd.cooldown / 1000 }}s</span>
-            <span>level {{ cmd.level }}</span>
-          </div>
-        </li>
-        <li v-if="!entry.channel.commands.length" class="empty-text">No commands set up.</li>
-      </ul>
+      <template v-if="activeTab === 'commands'">
+        <ul v-if="entry.channel" class="item-list">
+          <li v-for="cmd in entry.channel.commands" :key="cmd.command_id" class="item">
+            <div class="item-top">
+              <span class="mono">{{ cmd.name ?? cmd.trigger ?? '(unnamed)' }}</span>
+              <span class="type-tag">{{ cmd.type }}</span>
+              <span v-if="!cmd.active" class="disabled-tag">disabled</span>
+            </div>
+            <code v-if="cmd.type === 'COMMAND'" class="response">{{ cmd.run_command }}</code>
+            <p v-else class="response">{{ cmd.response }}</p>
+            <div class="item-bottom">
+              <span>used {{ cmd.use_count.toLocaleString() }}x</span>
+              <span>cooldown {{ cmd.cooldown / 1000 }}s</span>
+              <span>level {{ cmd.level }}</span>
+            </div>
+          </li>
+          <li v-if="!entry.channel.commands.length" class="empty-text">No commands set up.</li>
+        </ul>
+        <p v-else class="empty-text no-channel">This user does not have PotatBotat in their channel.</p>
+      </template>
 
       <div v-else-if="activeTab === 'connections'" class="connections-grid">
         <div v-for="conn in entry.user.connections" :key="conn.platform + conn.id" class="conn-card">
           <img v-if="conn.pfp" :src="conn.pfp" :alt="conn.platform" />
-          <div v-else class="conn-placeholder">{{ conn.platform.slice(0, 2) }}</div>
           <div>
-            <div class="conn-platform">{{ conn.platform }}</div>
+            <div class="conn-platform">{{ conn.platform === 'STV' ? '7TV' : conn.platform }}</div>
             <div class="conn-username">{{ conn.display ?? conn.username ?? conn.id }}</div>
           </div>
         </div>
       </div>
 
-      <div v-else-if="activeTab === 'potatoes'" class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Count</div>
-          <div class="stat-value">{{ entry.potatoes.count.toLocaleString() }}</div>
+      <template v-else-if="activeTab === 'potatoes'">
+        <div v-if="entry.potatoes" class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Count</div>
+            <div class="stat-value">{{ entry.potatoes.count.toLocaleString() }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Rank</div>
+            <div class="stat-value">#{{ entry.potatoes.rank }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Prestige</div>
+            <div class="stat-value">{{ entry.potatoes.prestige }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Trample</div>
+            <div class="stat-value">{{ entry.potatoes.trample.trampleCount }} / {{ entry.potatoes.trample.trampledCount }} taken</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Steal</div>
+            <div class="stat-value">{{ entry.potatoes.steal.stolenCount }} stolen · {{ entry.potatoes.steal.theftCount }} attempts</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Gamble</div>
+            <div class="stat-value">{{ entry.potatoes.gamble.winCount }}W / {{ entry.potatoes.gamble.loseCount }}L</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Duel</div>
+            <div class="stat-value">{{ entry.potatoes.duel.winCount }}W / {{ entry.potatoes.duel.loseCount }}L</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Quiz</div>
+            <div class="stat-value">{{ entry.potatoes.quiz.completed }} / {{ entry.potatoes.quiz.attempted }} completed</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Rank</div>
-          <div class="stat-value">#{{ entry.potatoes.rank }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Prestige</div>
-          <div class="stat-value">{{ entry.potatoes.prestige }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Trample</div>
-          <div class="stat-value">{{ entry.potatoes.trample.trampleCount }} / {{ entry.potatoes.trample.trampledCount }} taken</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Steal</div>
-          <div class="stat-value">{{ entry.potatoes.steal.stolenCount }} stolen · {{ entry.potatoes.steal.theftCount }} attempts</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Gamble</div>
-          <div class="stat-value">{{ entry.potatoes.gamble.winCount }}W / {{ entry.potatoes.gamble.loseCount }}L</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Duel</div>
-          <div class="stat-value">{{ entry.potatoes.duel.winCount }}W / {{ entry.potatoes.duel.loseCount }}L</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Quiz</div>
-          <div class="stat-value">{{ entry.potatoes.quiz.completed }} / {{ entry.potatoes.quiz.attempted }} completed</div>
-        </div>
-      </div>
+        <p v-else class="empty-text no-channel">This user hasn't claimed any potatoes yet.</p>
+      </template>
 
-      <div v-else-if="activeTab === 'settings'" class="settings-table">
-        <div class="settings-row">
-          <span class="key">state</span>
-          <span class="val">{{ entry.channel.state }}</span>
+      <template v-else-if="activeTab === 'settings'">
+        <div v-if="entry.channel" class="settings-table">
+          <div class="settings-row">
+            <span class="key">state</span>
+            <span class="val">{{ entry.channel.state }}</span>
+          </div>
+          <div class="settings-row">
+            <span class="key">joined_at</span>
+            <span class="val">{{ new Date(entry.channel.joined_at).toLocaleDateString() }}</span>
+          </div>
+          <div class="settings-row">
+            <span class="key">bot_banned</span>
+            <span class="val">{{ entry.channel.meta.bot_banned }}</span>
+          </div>
+          <div class="settings-row">
+            <span class="key">twitch_banned</span>
+            <span class="val">{{ entry.channel.meta.twitch_banned }}</span>
+          </div>
+          <div v-for="(value, key) in entry.channel.settings" :key="key" class="settings-row">
+            <span class="key">{{ key }}</span>
+            <span class="val">{{ Array.isArray(value) ? (value.length ? value.join(', ') : '—') : String(value) }}</span>
+          </div>
         </div>
-        <div class="settings-row">
-          <span class="key">joined_at</span>
-          <span class="val">{{ new Date(entry.channel.joined_at).toLocaleDateString() }}</span>
-        </div>
-        <div class="settings-row">
-          <span class="key">bot_banned</span>
-          <span class="val">{{ entry.channel.meta.bot_banned }}</span>
-        </div>
-        <div class="settings-row">
-          <span class="key">twitch_banned</span>
-          <span class="val">{{ entry.channel.meta.twitch_banned }}</span>
-        </div>
-        <div v-for="(value, key) in entry.channel.settings" :key="key" class="settings-row">
-          <span class="key">{{ key }}</span>
-          <span class="val">{{ Array.isArray(value) ? (value.length ? value.join(', ') : '—') : String(value) }}</span>
-        </div>
-      </div>
+        <p v-else class="empty-text no-channel">This user does not have PotatBotat in their channel.</p>
+      </template>
     </template>
   </div>
 </template>
@@ -436,6 +474,10 @@ watch(
   font-size: 14px;
 }
 
+.untracked {
+  font-style: italic;
+}
+
 .tabs {
   display: flex;
   gap: 6px;
@@ -547,21 +589,11 @@ watch(
   backdrop-filter: blur(var(--panel-blur));
 }
 
-.conn-card img,
-.conn-placeholder {
+.conn-card img {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-}
-
-.conn-placeholder {
-  background: rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  color: #aaa;
 }
 
 .conn-platform {
@@ -643,14 +675,18 @@ watch(
   word-break: break-word;
 }
 
-.count {
-  font-size: 12px;
-  color: #aaa;
-  font-weight: 400;
-}
-
 .empty-text {
   color: #aaa;
   font-size: 13px;
+}
+
+.no-channel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: 15px;
+  padding: 20px;
+  backdrop-filter: blur(var(--panel-blur));
+  text-align: center;
 }
 </style>
