@@ -264,26 +264,32 @@ watch(
 	    <button :class="{ active: activeTab === 'settings' }" @click="setTab('settings')">Channel Settings</button>
       </div>
 
-      <template v-if="activeTab === 'commands'">
-        <ul v-if="entry.channel" class="item-list">
-          <li v-for="cmd in entry.channel.commands" :key="cmd.command_id" class="item">
-            <div class="item-top">
-              <span class="mono">{{ cmd.name ?? cmd.trigger ?? '(unnamed)' }}</span>
-              <span class="type-tag">{{ cmd.type }}</span>
-              <span v-if="!cmd.active" class="disabled-tag">disabled</span>
-            </div>
-            <code v-if="cmd.type === 'COMMAND'" class="response">{{ cmd.run_command }}</code>
-            <p v-else class="response">{{ cmd.response }}</p>
-            <div class="item-bottom">
-              <span>used {{ cmd.use_count.toLocaleString() }}x</span>
-              <span>cooldown {{ cmd.cooldown / 1000 }}s</span>
-              <span>level {{ cmd.level }}</span>
-            </div>
-          </li>
-          <li v-if="!entry.channel.commands.length" class="empty-text">No commands set up.</li>
+    <template v-if="activeTab === 'commands'">
+        <ul v-if="entry.channel && entry.channel.commands.length" class="item-list">
+            <li v-for="cmd in entry.channel.commands" :key="cmd.command_id" class="item">
+                <div class="item-top">
+                    <span class="mono">{{ cmd.name ?? cmd.trigger ?? '(unnamed)' }}</span>
+                    <span class="type-tag">{{ cmd.type }}</span>
+                    <span v-if="!cmd.active" class="disabled-tag">disabled</span>
+                </div>
+                <code v-if="cmd.type === 'COMMAND'" class="response">{{ cmd.run_command }}</code>
+                <p v-else class="response">{{ cmd.response }}</p>
+                <div class="item-bottom">
+                    <span>used {{ cmd.use_count.toLocaleString() }}x</span>
+                    <span>cooldown {{ cmd.cooldown / 1000 }}s</span>
+                    <span>level {{ cmd.level }}</span>
+                </div>
+            </li>
         </ul>
-        <p v-else class="empty-text no-channel">This user does not have PotatBotat in their channel.</p>
-      </template>
+        <div v-else-if="entry.channel" class="no-channel">
+            <img src="/tatov2.png" alt="" class="no-channel-icon" />
+            <p>No commands set up.</p>
+        </div>
+        <div v-else class="no-channel">
+            <img src="/tatoExplode.gif" alt="" class="no-channel-icon" />
+            <p>This user hasn't joined PotatBotat in a channel.</p>
+        </div>
+    </template>
 
       <div v-else-if="activeTab === 'connections'" class="connections-grid">
         <div v-for="conn in entry.user.connections" :key="conn.platform + conn.id" class="conn-card">
@@ -390,6 +396,21 @@ watch(
 .search-row button {
   background-color: #6441a4;
   text-shadow: none;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 1em 1.6em;
+  font-size: 0.9em;
+  font-weight: 600;
+  font-family: inherit;
+  background-color: #4CAF50;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  text-shadow: -1px -1px 0 #333, 1px -1px 0 #333, -1px 1px 0 #333, 1px 1px 0 #333;
+  outline: auto -webkit-focus-ring-color;
+  outline-color: #f4f4f4;
 }
 
 .empty-state,
@@ -681,12 +702,27 @@ watch(
 }
 
 .no-channel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   box-shadow: var(--panel-shadow);
   border-radius: 15px;
-  padding: 20px;
+  padding: 32px 20px;
   backdrop-filter: blur(var(--panel-blur));
   text-align: center;
+}
+
+.no-channel-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.no-channel p {
+  margin: 0;
+  color: #aaa;
+  font-size: 13px;
 }
 </style>
