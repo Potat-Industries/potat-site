@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, watch } from 'vue';
-import { humanizeDuration } from '../assets/utilities';
-import { Command, KeyString } from '../types/help';
+import { humanizeDuration } from '$assets/utilities';
+import { Command, KeyString } from '$types/help';
 import router from '../router';
 import { useRoute } from 'vue-router';
-import { fetchBackend, API_BASE } from '../assets/request';
+import { fetchBackend, API_BASE } from '$assets/request';
 const route = useRoute();
 
 const prefix = ref<string>('#');

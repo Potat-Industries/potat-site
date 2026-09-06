@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { fetchBackend } from '../assets/request';
+import { fetchBackend } from '$assets/request';
 
 const 
 

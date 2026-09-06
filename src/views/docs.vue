@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //@ts-ignore typescript is retarded holy shit
-import SwaggerUI from '../components/swaggerUI.vue'
+import SwaggerUI from '$components/swaggerUI.vue'
 </script>
 
 <template>

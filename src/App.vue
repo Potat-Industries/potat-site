@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import LoginButton from './components/loginButton.vue';
-import JoinedModal from './components/joinedModal.vue';
+import LoginButton from '$components/loginButton.vue';
+import JoinedModal from '$components/joinedModal.vue';
 import { onMounted, onUnmounted, ref, watch } from 'vue';
-import { StatsSocket } from './assets/socket';
+import { StatsSocket } from '$assets/socket';
 import { useRoute } from 'vue-router';
 import "normalize.css";
-import { UserState } from './types/misc';
+import { UserState } from '$types/misc';
 const route = useRoute();
 
 new StatsSocket('wss://stats.potat.app');

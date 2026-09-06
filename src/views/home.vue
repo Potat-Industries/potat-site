@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import JoinButton from '../components/joinButton.vue';
-import PartnerList from '../components/partnerList.vue';
-import StatsBox from '../components/statsBox.vue';
-import TwitchChat from '../components/twitchChat.vue';
-import TwitchStream from '../components/twitchStream.vue';
+import JoinButton from '$components/joinButton.vue';
+import PartnerList from '$components/partnerList.vue';
+import StatsBox from '$components/statsBox.vue';
+import TwitchChat from '$components/twitchChat.vue';
+import TwitchStream from '$components/twitchStream.vue';
 </script>
 
 <template>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, computed, nextTick } from 'vue';
-import { brightenColor } from '../assets/utilities';
-import { fetchBackend } from '../assets/request';
+import { brightenColor } from '$assets/utilities';
+import { fetchBackend } from '$assets/request';
 import { useRoute } from 'vue-router';
 import router from '../router';
-import computePaintStyle from '../assets/applyPaint';
-import { PaintRawData } from '../types/misc';
+import computePaintStyle from '$assets/applyPaint';
+import { PaintRawData } from '$types/misc';
 const potatoImage = '/tatov2.png';
 
 interface Leaderboard {
