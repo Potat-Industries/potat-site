@@ -95,6 +95,11 @@ const routes: RouteRecordRaw[] = [
     name: 'NotFound',
     component: () => import('../views/notFound.vue'),
   },
+  {
+    path: '/user/:username?',
+    name: 'User',
+    component: () => import('../views/user.vue'),
+  },
 ];
 
 const router = createRouter({
