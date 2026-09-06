@@ -22,7 +22,7 @@ const toggleMobileMenu = () => {
   isMobileMenuVisible.value = !isMobileMenuVisible.value;
 };
 
-const onDocumentClick =  (event: MouseEvent) => {
+const onDocumentClick = (event: MouseEvent) => {
 	if (!isDropdownVisible.value && !isMobileMenuVisible.value) {
 		return;
 	}
@@ -35,6 +35,27 @@ const onDocumentClick =  (event: MouseEvent) => {
 
 		return;
 	}
+};
+
+const sillyPotatoMessages = [
+	'Potatoes naturally have nearly zero fat!',
+	'Potatoes are objectively the best vegetable!',
+	'Potatoes were the first vegetable in space!',
+	'Potatoes are technically still alive when you buy them!',
+	'Potatoes get sunburn, keep them in a cool dark place!',
+	'Potatoes actually were used in the first Mr. Potato Head toys!',
+	'Potatoes are actually a better source of potacium than bananas!',
+	'Potatoes are about 80% water and only 20% solid!',
+	'Potatoes were once used as currency on a remote South Atlantic island!',
+	'Potatoes can be used to distill vodka, to keep you fat and drunk!',
+	'Potatoes have more chromosomes than humans do!',
+	'Potatoes are the fourth most grown food crop in the world!',
+]
+
+const getSillyMessage = () => {
+	const index = ~~(Math.random() * sillyPotatoMessages.length);
+
+	return sillyPotatoMessages[index]
 };
 
 onMounted(() => {
@@ -63,6 +84,7 @@ watch(route, () => {
 	isDropdownVisible.value = false;
 	isMobileMenuVisible.value = false;
 });
+
 </script>
 <template>
    <JoinedModal />
@@ -119,6 +141,10 @@ watch(route, () => {
 		</li>
 		<li class="login-button-container mobile-menu"><LoginButton/></li>
 	</ul>
+
+		<div class="temp-bar">
+			<span>{{ getSillyMessage() }}</span>
+		</div>
 
 		<div class="main-container">
 			<router-view v-slot="{ Component }">
