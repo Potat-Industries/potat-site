@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue';
 import { fetchBackend } from '../assets/request';
 import eventBus from '../assets/eventBus';
+import { UserState } from '../types/misc';
 
 const
 
@@ -10,6 +11,8 @@ buttonToShake = ref<string | null>(null),
 authorizationToken = reactive({ value: localStorage.getItem('authorization') }),
 
 userState = reactive({ value: localStorage.getItem('userState') }),
+
+linkedPlatforms = ref<Set<string>>(new Set()),
 
 isAuthenticated = computed<boolean>(() => {
   return authorizationToken.value !== null || userState.value !== null;
@@ -43,6 +46,7 @@ signOut = (): void => {
   localStorage.clear();
   userState.value = null;
   authorizationToken.value = null;
+  linkedPlatforms.value = new Set();
 },
 
 shakeButton = (platform: string) => {
@@ -51,13 +55,41 @@ shakeButton = (platform: string) => {
   buttonToShake.value = platform;
 
   setTimeout(() => buttonToShake.value = null, 500);
+},
+
+loadLinkedPlatforms = async () => {
+  if (!isAuthenticated.value) return;
+
+  const login = (JSON.parse(userState.value as string) as UserState)?.login;
+  if (!login) return;
+
+  const res = await fetchBackend<Record<string, unknown>>(`users/${login}`, { auth: true });
+  const user = res.data?.[0] as Record<string, unknown> | undefined;
+  if (!user) return;
+
+  const platformFields: Record<string, string> = {
+    ANILIST: 'anilist_id',
+    KICK: 'kick_id',
+    DISCORD: 'discord_id',
+    STEAM: 'steam_id',
+    TRAKT: 'trakt_id',
+  };
+
+  const linked = new Set<string>();
+  for (const [platform, field] of Object.entries(platformFields)) {
+    if (user[field] != null) linked.add(platform);
+  }
+  linkedPlatforms.value = linked;
 };
 
-onMounted(() => {
-  eventBus.$on('newToken', (payload: { token: string; user: string }) => {
+onMounted(async () => {
+  await loadLinkedPlatforms();
+
+  eventBus.$on('newToken', async (payload: { token: string; user: string }) => {
     authorizationToken.value = payload.token;
     userState.value = payload.user;
-  })
+    await loadLinkedPlatforms();
+  });
 })
 </script>
 
@@ -72,6 +104,7 @@ onMounted(() => {
           @click="connect('ANILIST')"
         >
           <img src="/anilist.svg" class="icon"/> Anilist
+          <span v-if="linkedPlatforms.has('ANILIST')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button
@@ -80,6 +113,7 @@ onMounted(() => {
           @click="connect('KICK')"
         >
           <img src="/kick.png" class="icon"/> Kick
+          <span v-if="linkedPlatforms.has('KICK')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button 
@@ -88,6 +122,7 @@ onMounted(() => {
           @click="connect('DISCORD')"
         >
           <img src="/discord.svg" class="icon"/> Discord
+          <span v-if="linkedPlatforms.has('DISCORD')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button 
@@ -96,6 +131,7 @@ onMounted(() => {
           @click="connect('STEAM')"
         >
           <img src="/steam.png" class="icon"/> Steam
+          <span v-if="linkedPlatforms.has('STEAM')" class="disconnect-option">Disconnect</span>
         </button>
 
         <button 
@@ -104,6 +140,7 @@ onMounted(() => {
           @click="connect('TRAKT')"
         >
           <img src="/trakt.png" class="icon"/> Trakt
+          <span v-if="linkedPlatforms.has('TRAKT')" class="disconnect-option">Disconnect</span>
         </button>
       </div>
     </div>
@@ -155,6 +192,16 @@ button {
 button .icon {
   width: 24px;
   height: 24px;
+}
+
+.disconnect-option {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 2px 8px;
+  white-space: nowrap;
 }
 
 button:hover {
