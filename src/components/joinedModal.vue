@@ -48,19 +48,19 @@
 				<a href="https://www.frankerfacez.com/channel/mine" target="_blank">
 					FFZ
 					<button>
-						<img src="https://frankerfacez.com/static/images/favicon-96.png" alt="FFZ" title="FFZ"/>
+						<img src="/ffz.png" alt="FFZ" title="FFZ"/>
 					</button>
 				</a>
 				<a href="https://betterttv.com/dashboard/editors" target="_blank">
 					BTTV
 					<button>
-						<img src="https://lh3.googleusercontent.com/18QCNXbFYR0TjGij27lc4oI8VB40Pv9EZ2XPSG0TdAFVs0gUO86pdGS4JQoq8UxH7Dqg9j4dvJE6Pg0jtqjkb3wb=s120" alt="BTTV" title="BTTV"/>
+						<img src="/bttv.png" alt="BTTV" title="BTTV"/>
 					</button>
 				</a>
 				<a href="https://7tv.app/settings/editors" target="_blank">
 					7TV
 					<button>
-						<img src="https://7tv.app/favicon.svg" alt="7TV" title="7TV"/>
+						<img src="/7tv.svg" alt="7TV" title="7TV"/>
 					</button>
 				</a>
 			</div>
